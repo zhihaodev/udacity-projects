@@ -3,6 +3,8 @@
 # Test cases for tournament.py
 
 from tournament import *
+from psycopg2 import IntegrityError
+
 
 def testDeleteMatches():
     deleteMatches()
@@ -97,7 +99,8 @@ def testReportMatches():
         if i in (id1, id3) and w != 1:
             raise ValueError("Each match winner should have one win recorded.")
         elif i in (id2, id4) and w != 0:
-            raise ValueError("Each match loser should have zero wins recorded.")
+            raise ValueError(
+                "Each match loser should have zero wins recorded.")
     print "7. After a match, players have updated standings."
 
 
@@ -125,6 +128,44 @@ def testPairings():
     print "8. After one match, players with one win are paired."
 
 
+def testPreventRematch():
+    deleteMatches()
+    deletePlayers()
+    registerPlayer("player1")
+    registerPlayer("player2")
+    registerPlayer("player3")
+    registerPlayer("player4")
+    standings = playerStandings()
+    [id1, id2, id3, id4] = [row[0] for row in standings]
+    try:
+        reportMatch(id1, id2)
+        reportMatch(id2, id1)
+    except IntegrityError, e:
+        print "9. Rematch is not allowed."
+    else:
+        raise ValueError("Rematch is not allowed.")
+
+
+def testFreeWin():
+    deleteMatches()
+    deletePlayers()
+    registerPlayer("player1")
+    registerPlayer("player2")
+    registerPlayer("player3")
+    registerPlayer("player4")
+    registerPlayer("player5")
+    standings = playerStandings()
+    [id1, id2, id3, id4, id5] = [row[0] for row in standings]
+    pairings = swissPairings()
+    if len(pairings) != 3:
+        raise ValueError("For five players, swissPairings "
+                         "should return three pairs(including a free win).")
+    bye = filter(lambda x: x[0] == 0 or x[2] == 0, pairings)
+    if len(bye) == 1:
+        print ("10. If there is an odd number of players, "
+               "'bye' is correctly assigned.")
+
+
 if __name__ == '__main__':
     testDeleteMatches()
     testDelete()
@@ -134,6 +175,7 @@ if __name__ == '__main__':
     testStandingsBeforeMatches()
     testReportMatches()
     testPairings()
+    print "Extra test cases:"
+    testPreventRematch()
+    testFreeWin()
     print "Success!  All tests pass!"
-
-

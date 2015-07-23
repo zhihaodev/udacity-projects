@@ -4,19 +4,18 @@
 #
 
 import psycopg2
-from psycopg2.extensions import AsIs
-
-_players_DB = 'players'
-_matches_DB = 'matches'
+from random import randint
 
 
 def connect():
     """Connect to the PostgreSQL database.  Returns a database connection."""
+
     return psycopg2.connect("dbname=tournament")
 
 
 def deleteMatches():
     """Remove all the match records from the database."""
+
     conn = connect()
     c = conn.cursor()
     c.execute("TRUNCATE TABLE matches;")
@@ -26,6 +25,7 @@ def deleteMatches():
 
 def deletePlayers():
     """Remove all the player records from the database."""
+
     conn = connect()
     c = conn.cursor()
     c.execute('TRUNCATE TABLE players, matches;')
@@ -35,6 +35,7 @@ def deletePlayers():
 
 def countPlayers():
     """Returns the number of players currently registered."""
+
     conn = connect()
     c = conn.cursor()
     c.execute('SELECT count(id) FROM players')
@@ -52,6 +53,7 @@ def registerPlayer(name):
     Args:
       name: the player's full name (need not be unique).
     """
+
     conn = connect()
     c = conn.cursor()
     c.execute('INSERT INTO players (name) VALUES (%s)', (name, ))
@@ -72,6 +74,7 @@ def playerStandings():
         wins: the number of matches the player has won
         matches: the number of matches the player has played
     """
+
     conn = connect()
     c = conn.cursor()
     c.execute('SELECT * FROM player_standings')
@@ -87,6 +90,8 @@ def reportMatch(winner, loser):
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
+    if winner == loser:
+        raise ValueError("Two players in a match should be different.")
     conn = connect()
     c = conn.cursor()
     c.execute('INSERT INTO matches VALUES (%s, %s, %s)',
@@ -110,3 +115,30 @@ def swissPairings():
         id2: the second player's unique id
         name2: the second player's name
     """
+
+    pairings = []
+    standings = playerStandings()
+
+    # Deal with the situation when there is an odd number of players
+    if len(standings) % 2 != 0:
+        conn = connect()
+        c = conn.cursor()
+        c.execute('SELECT id FROM players_bye_list')
+        players = c.fetchall()
+        conn.close()
+        luckyPlayer = players[randint(0, len(players) - 1)][0]
+
+        index = [standing[0] for standing in standings].index(luckyPlayer)
+        print index
+        if index % 2 == 0:
+            standings.insert(index, (0, 'free win'))
+        else:
+            standings[index], standings[index + 1] = \
+                standings[index + 1], standings[index]
+            standings.insert(index + 2, (0, 'free win'))
+
+    for i in range(0, len(standings), 2):
+        pairings.append(
+            (standings[i][0], standings[i][1],
+             standings[i + 1][0], standings[i + 1][1]))
+    return pairings
