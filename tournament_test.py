@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-#
-# Test cases for tournament.py
+
+"""Test cases for tournament.py"""
 
 from tournament import *
 from psycopg2 import IntegrityError

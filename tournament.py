@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""implementation of a Swiss-system tournament"""
+"""Implementation of a Swiss-system tournament"""
 
 import psycopg2
 from random import randint
@@ -135,6 +135,7 @@ def swissPairings():
         index = [standing[0] for standing in standings].index(luckyPlayer)
 
         # Insert a 'bye' into the standings list
+        # Player who receive a bye is assigned to a fake opponent with id = 0
         if index % 2 != 0:
             standings[index], standings[index + 1] = \
                 standings[index + 1], standings[index]
