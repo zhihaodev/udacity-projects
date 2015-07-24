@@ -123,7 +123,7 @@ def swissPairings():
     if len(standings) % 2 != 0:
         conn = connect()
         c = conn.cursor()
-        c.execute('SELECT id FROM players_bye_list')
+        c.execute('SELECT id FROM bye_candidates')
         players = c.fetchall()
         conn.close()
         luckyPlayer = players[randint(0, len(players) - 1)][0]
@@ -131,11 +131,11 @@ def swissPairings():
         index = [standing[0] for standing in standings].index(luckyPlayer)
         print index
         if index % 2 == 0:
-            standings.insert(index, (0, 'free win'))
+            standings.insert(index, (0, 'bye'))
         else:
             standings[index], standings[index + 1] = \
                 standings[index + 1], standings[index]
-            standings.insert(index + 2, (0, 'free win'))
+            standings.insert(index + 2, (0, 'bye'))
 
     for i in range(0, len(standings), 2):
         pairings.append(

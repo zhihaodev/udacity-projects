@@ -29,7 +29,7 @@ CREATE TABLE matches
 	PRIMARY KEY(p1, p2)
 );
 
--- Create view for finding the number of matches each player has played
+-- Create view for finding the number of wins for each player
 CREATE VIEW matches_won AS
 SELECT players.id, players.name, count(matches.winner) AS wins 
 FROM players LEFT JOIN matches ON
@@ -37,7 +37,7 @@ players.id = matches.winner
 GROUP BY players.id
 ORDER BY players.id;
 
--- Create view for finding the number of wins for each player
+-- Create view for finding the number of matches each player has played
 CREATE VIEW matches_played AS
 SELECT players.id, players.name, count(matches.p1) AS sum
 FROM players LEFT JOIN matches ON
@@ -57,12 +57,35 @@ ON standings.id = matches_played.id
 ORDER BY wins DESC;
 
 -- Create view for finding players who are eligible for a bye
-CREATE VIEW players_bye_list AS
+CREATE VIEW bye_candidates AS
 SELECT players.id, count(matches.p2)
 FROM players LEFT JOIN matches
 ON players.id = matches.p2
 GROUP BY players.id
 HAVING count(matches.p2) = 0
 ORDER BY players.id;
+
+-- INSERT INTO players (name) VALUES ('one');
+-- INSERT INTO players (name) VALUES ('two');
+-- INSERT INTO players (name) VALUES ('three');
+-- INSERT INTO players (name) VALUES ('four');
+
+-- INSERT INTO matches VALUES (1, 2, 1);
+-- INSERT INTO matches VALUES (3, 4, 4);
+-- INSERT INTO matches VALUES (1, 4, 1);
+-- INSERT INTO matches VALUES (2, 3, 3);
+
+-- (SELECT players.id, matches.p1 as id2
+-- FROM players, matches
+-- WHERE players.id = matches.winner AND matches.p1 != matches.winner)
+-- UNION ALL
+-- (SELECT players.id, matches.p2
+-- FROM players, matches
+-- WHERE players.id = matches.winner AND matches.p2 != matches.winner)
+-- ORDER BY id
+-- ;
+
+
+
 
 

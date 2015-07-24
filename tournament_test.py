@@ -146,7 +146,7 @@ def testPreventRematch():
         raise ValueError("Rematch is not allowed.")
 
 
-def testFreeWin():
+def testBye():
     deleteMatches()
     deletePlayers()
     registerPlayer("player1")
@@ -177,5 +177,5 @@ if __name__ == '__main__':
     testPairings()
     print "Extra test cases:"
     testPreventRematch()
-    testFreeWin()
+    testBye()
     print "Success!  All tests pass!"
