@@ -65,8 +65,8 @@ def testStandingsBeforeMatches():
     registerPlayer("Randy Schwartz")
     standings = playerStandings()
     if len(standings) < 2:
-        raise ValueError("Players should appear in playerStandings even before "
-                         "they have played any matches.")
+        raise ValueError("Players should appear in playerStandings "
+                         "even before they have played any matches.")
     elif len(standings) > 2:
         raise ValueError("Only registered players should appear in standings.")
     if len(standings[0]) != 4:
@@ -76,9 +76,10 @@ def testStandingsBeforeMatches():
         raise ValueError(
             "Newly registered players should have no matches or wins.")
     if set([name1, name2]) != set(["Melpomene Murray", "Randy Schwartz"]):
-        raise ValueError("Registered players' names should appear in standings, "
-                         "even if they have no matches played.")
-    print "6. Newly registered players appear in the standings with no matches."
+        raise ValueError("Registered players' names should appear "
+                         "in standings, even if they have no matches played.")
+    print ("6. Newly registered players appear "
+           "in the standings with no matches.")
 
 
 def testReportMatches():
@@ -139,11 +140,11 @@ def testPreventRematch():
     [id1, id2, id3, id4] = [row[0] for row in standings]
     try:
         reportMatch(id1, id2)
-        reportMatch(id2, id1)
+        reportMatch(id1, id2)
     except IntegrityError, e:
         print "9. Rematch is not allowed."
     else:
-        raise ValueError("Rematch is not allowed.")
+        raise ValueError("Rematch should not allowed.")
 
 
 def testBye():
@@ -166,6 +167,38 @@ def testBye():
                "'bye' is correctly assigned.")
 
 
+def testOMW():
+    deleteMatches()
+    deletePlayers()
+    registerPlayer("A")
+    registerPlayer("B")
+    registerPlayer("C")
+    registerPlayer("D")
+    registerPlayer("E")
+    registerPlayer("F")
+    registerPlayer("G")
+    registerPlayer("H")
+    standings = playerStandings()
+    [id1, id2, id3, id4, id5, id6, id7, id8] = [row[0] for row in standings]
+
+    # For test only
+    reportMatch(id1, id2)
+    reportMatch(id1, id3)
+    reportMatch(id2, id4)
+    reportMatch(id2, id5)
+    reportMatch(id4, id1)
+    reportMatch(id6, id1)
+    reportMatch(id7, id6)
+    pairings = swissPairings()
+    pairSets = [frozenset([pair[0], pair[2]])for pair in pairings]
+    if frozenset([id4, id6]) in pairSets:
+        print ("11. Correctly rank players according to OMW "
+               "when they have the same number of wins.")
+    else:
+        raise ValueError("Not correctly rank players according to OMW "
+                         "when they have the same number of wins.")
+
+
 if __name__ == '__main__':
     testDeleteMatches()
     testDelete()
@@ -178,4 +211,5 @@ if __name__ == '__main__':
     print "Extra test cases:"
     testPreventRematch()
     testBye()
+    testOMW()
     print "Success!  All tests pass!"

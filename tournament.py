@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-#
-# tournament.py -- implementation of a Swiss-system tournament
-#
+
+"""implementation of a Swiss-system tournament"""
 
 import psycopg2
 from random import randint
@@ -38,7 +37,7 @@ def countPlayers():
 
     conn = connect()
     c = conn.cursor()
-    c.execute('SELECT count(id) FROM players')
+    c.execute('SELECT COUNT(id) FROM players')
     count = c.fetchall()[0][0]
     conn.close()
     return count
@@ -79,7 +78,12 @@ def playerStandings():
     c = conn.cursor()
     c.execute('SELECT * FROM player_standings')
     standings = c.fetchall()
+    c.execute('SELECT * FROM omw')
+    omw = c.fetchall()
     conn.close()
+    # Rank players according to both their wins and OMWs
+    standings.sort(
+        key=lambda x: (x[2], omw[x[0] - omw[0][0]][1]), reverse=True)
     return standings
 
 
@@ -94,8 +98,7 @@ def reportMatch(winner, loser):
         raise ValueError("Two players in a match should be different.")
     conn = connect()
     c = conn.cursor()
-    c.execute('INSERT INTO matches VALUES (%s, %s, %s)',
-              (min(winner, loser), max(winner, loser), winner))
+    c.execute('INSERT INTO matches VALUES (%s, %s)', (winner, loser))
     conn.commit()
     conn.close()
 
@@ -126,17 +129,22 @@ def swissPairings():
         c.execute('SELECT id FROM bye_candidates')
         players = c.fetchall()
         conn.close()
-        luckyPlayer = players[randint(0, len(players) - 1)][0]
 
+        # Randomly pick a player who will receive a 'bye' next round
+        luckyPlayer = players[randint(0, len(players) - 1)][0]
         index = [standing[0] for standing in standings].index(luckyPlayer)
-        print index
-        if index % 2 == 0:
-            standings.insert(index, (0, 'bye'))
-        else:
+
+        # Insert a 'bye' into the standings list
+        if index % 2 != 0:
             standings[index], standings[index + 1] = \
                 standings[index + 1], standings[index]
-            standings.insert(index + 2, (0, 'bye'))
+            index = index + 1
+        if index == len(standings) - 1:
+            standings.append((0, 'bye'))
+        else:
+            standings.insert(index + 1, (0, 'bye'))
 
+    # Pair up as tuples
     for i in range(0, len(standings), 2):
         pairings.append(
             (standings[i][0], standings[i][1],
