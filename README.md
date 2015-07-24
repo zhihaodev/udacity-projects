@@ -1,6 +1,6 @@
 # Tournament Results
 
-Write a Python module that uses the PostgreSQL database to keep track of players and matches in a Swiss-system tournament.
+A Python module that uses the PostgreSQL database to keep track of players and matches in a Swiss-system tournament.
 
 ## Quick start
 
