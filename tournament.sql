@@ -54,11 +54,15 @@ CREATE VIEW player_standings AS
 	ON standings.id = matches_played.id
 	ORDER BY wins DESC;
 
--- Create view for computing OMW(Opponent Match Wins) of each player
-CREATE VIEW omw AS
-	SELECT players.id, COALESCE(SUM(omw_temp.sum), 0) as sum
+-- Create view for determing the player standings according to
+-- both their wins and OMWs
+CREATE VIEW player_standings_with_omw AS
+	SELECT omw_temp2.id, player_standings.name, player_standings.wins,
+	player_standings.sum, omw_temp2.omw_sum
+	FROM player_standings,
+	(SELECT players.id, COALESCE(SUM(omw_temp.win_sum), 0) AS omw_sum
 	FROM players LEFT JOIN 
-	(SELECT w_id, SUM(wins)
+	(SELECT w_id, SUM(wins) AS win_sum
 	FROM 
 	(SELECT matches.w_id, matches.l_id, player_standings.wins
 	FROM player_standings, matches
@@ -66,4 +70,6 @@ CREATE VIEW omw AS
 	GROUP BY w_id) AS omw_temp
 	ON players.id = omw_temp.w_id
 	GROUP BY players.id
-	ORDER BY players.id;
+	ORDER BY players.id) AS omw_temp2
+	WHERE omw_temp2.id = player_standings.id
+	ORDER by wins DESC, omw_sum DESC;

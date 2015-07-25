@@ -9,8 +9,7 @@ from random import randint
 _database = 'tournament'
 _playersTable = 'players'
 _matchesTable = 'matches'
-_playerStandingsView = 'player_standings'
-_omwView = 'omw'
+_playerStandingsView = 'player_standings_with_omw'
 
 
 def connect():
@@ -87,14 +86,10 @@ def playerStandings():
     """
 
     conn, cursor = connect()
-    cursor.execute('SELECT * FROM {}'.format(_playerStandingsView))
+    cursor.execute(
+        'SELECT id, name, wins, sum FROM {}'.format(_playerStandingsView))
     standings = cursor.fetchall()
-    cursor.execute('SELECT * FROM {}'.format(_omwView))
-    omw = cursor.fetchall()
     conn.close()
-    # Rank players according to both their wins and OMWs
-    standings.sort(
-        key=lambda x: (x[2], omw[x[0] - omw[0][0]][1]), reverse=True)
     return standings
 
 
