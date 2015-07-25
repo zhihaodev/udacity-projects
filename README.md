@@ -2,13 +2,20 @@
 
 A Python module that uses the PostgreSQL database to keep track of players and matches in a Swiss-system tournament.
 
-## Quick start
+## Environment
 
+- [Python](https://www.python.org/) 2.7.6
+- [PostgreSQL](http://www.postgresql.org/) 9.3.9
+- [psycopg2](http://initd.org/psycopg/) 2.4.5
 
-- Enter [PostgreSQL](http://www.postgresql.org/) interactive mode: `psql`.
-- Import the whole file: `\i tournament.sql`.
-- Run the test: `python tournament_test.py`.
+## Usage
 
+- Import the whole SQL file into `psql`: `psql -f tournament.sql`.
+
+- Run the test cases: `python tournament_test.py`.
+
+- You should see 
+> Success!  All tests pass!
 
 ### What's included
 
@@ -27,12 +34,12 @@ tournament/
 
 Table **players**:
 ```
- id |       name
-----+------------------
-  1 | Twilight Sparkle
-  2 | Fluttershy
-  3 | Applejack
-  4 | Pinkie Pie
+ id |       name       | bye
+----+------------------+-----
+  1 | Twilight Sparkle | t
+  2 | Fluttershy       | t
+  3 | Applejack        | t
+  4 | Pinkie Pie       | t
 ```
 
 Table **matches**:
@@ -42,13 +49,3 @@ Table **matches**:
     1 |    2
     3 |    4
 ```
-
-## Feature
-
-- Prevent rematches between players.
-
-- Support odd number of players by assigning "bye" to one player randomly.
-
-- When two players have the same number of wins, rank them according to OMW (Opponent Match Wins), the total number of wins by players they have played against.
-
-- Include extra test cases.

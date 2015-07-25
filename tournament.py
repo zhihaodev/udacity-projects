@@ -5,19 +5,31 @@
 import psycopg2
 from random import randint
 
+# Names of database, tables and views
+_database = 'tournament'
+_playersTable = 'players'
+_matchesTable = 'matches'
+_playerStandingsView = 'player_standings'
+_omwView = 'omw'
+
 
 def connect():
-    """Connect to the PostgreSQL database.  Returns a database connection."""
+    """Connect to the PostgreSQL database.
+    Returns a database connection and a cursor."""
 
-    return psycopg2.connect("dbname=tournament")
+    try:
+        conn = psycopg2.connect('dbname={}'.format(_database))
+        cursor = conn.cursor()
+        return conn, cursor
+    except:
+        print 'Connection to database failed'
 
 
 def deleteMatches():
     """Remove all the match records from the database."""
 
-    conn = connect()
-    c = conn.cursor()
-    c.execute("TRUNCATE TABLE matches;")
+    conn, cursor = connect()
+    cursor.execute('DELETE FROM {};'.format(_matchesTable))
     conn.commit()
     conn.close()
 
@@ -25,9 +37,9 @@ def deleteMatches():
 def deletePlayers():
     """Remove all the player records from the database."""
 
-    conn = connect()
-    c = conn.cursor()
-    c.execute('TRUNCATE TABLE players, matches;')
+    conn, cursor = connect()
+    cursor.execute('DELETE FROM {};'.format(_matchesTable))
+    cursor.execute('DELETE FROM {};'.format(_playersTable))
     conn.commit()
     conn.close()
 
@@ -35,10 +47,9 @@ def deletePlayers():
 def countPlayers():
     """Returns the number of players currently registered."""
 
-    conn = connect()
-    c = conn.cursor()
-    c.execute('SELECT COUNT(id) FROM players')
-    count = c.fetchall()[0][0]
+    conn, cursor = connect()
+    cursor.execute('SELECT COUNT(id) FROM {}'.format(_playersTable))
+    count = cursor.fetchone()[0]
     conn.close()
     return count
 
@@ -53,9 +64,10 @@ def registerPlayer(name):
       name: the player's full name (need not be unique).
     """
 
-    conn = connect()
-    c = conn.cursor()
-    c.execute('INSERT INTO players (name) VALUES (%s)', (name, ))
+    conn, cursor = connect()
+    query = 'INSERT INTO {} (name, bye) VALUES (%s, TRUE);'.format(
+        _playersTable)
+    cursor.execute(query, (name, ))
     conn.commit()
     conn.close()
 
@@ -74,12 +86,11 @@ def playerStandings():
         matches: the number of matches the player has played
     """
 
-    conn = connect()
-    c = conn.cursor()
-    c.execute('SELECT * FROM player_standings')
-    standings = c.fetchall()
-    c.execute('SELECT * FROM omw')
-    omw = c.fetchall()
+    conn, cursor = connect()
+    cursor.execute('SELECT * FROM {}'.format(_playerStandingsView))
+    standings = cursor.fetchall()
+    cursor.execute('SELECT * FROM {}'.format(_omwView))
+    omw = cursor.fetchall()
     conn.close()
     # Rank players according to both their wins and OMWs
     standings.sort(
@@ -96,9 +107,9 @@ def reportMatch(winner, loser):
     """
     if winner == loser:
         raise ValueError("Two players in a match should be different.")
-    conn = connect()
-    c = conn.cursor()
-    c.execute('INSERT INTO matches VALUES (%s, %s)', (winner, loser))
+    conn, cursor = connect()
+    query = 'INSERT INTO {} VALUES (%s, %s)'.format(_matchesTable)
+    cursor.execute(query, (winner, loser))
     conn.commit()
     conn.close()
 
@@ -124,16 +135,22 @@ def swissPairings():
 
     # Deal with the situation when there is an odd number of players
     if len(standings) % 2 != 0:
-        conn = connect()
-        c = conn.cursor()
-        c.execute('SELECT id FROM bye_candidates')
-        players = c.fetchall()
+        conn, cursor = connect()
+        # Find out the players who have not received a bye yet
+        cursor.execute(
+            'SELECT id FROM {} WHERE bye = TRUE'.format(_playersTable))
+        players = cursor.fetchall()
+
+        # From those eligible players, randomly pick one
+        # who will receive a 'bye' next round
+        luckyPlayer = players[randint(0, len(players) - 1)][0]
+        # Update table
+        query = 'UPDATE {} SET bye = FALSE WHERE id = %s'.format(_playersTable)
+        cursor.execute(query, (luckyPlayer, ))
+        conn.commit()
         conn.close()
 
-        # Randomly pick a player who will receive a 'bye' next round
-        luckyPlayer = players[randint(0, len(players) - 1)][0]
         index = [standing[0] for standing in standings].index(luckyPlayer)
-
         # Insert a 'bye' into the standings list
         # Player who receive a bye is assigned to a fake opponent with id = 0
         if index % 2 != 0:

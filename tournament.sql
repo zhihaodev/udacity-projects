@@ -1,6 +1,12 @@
 -- Table definitions for the tournament project.
 
 
+-- Kill the active connection with the database
+SELECT pg_terminate_backend(pg_stat_activity.pid)
+FROM pg_stat_activity
+WHERE pg_stat_activity.datname = 'tournament'
+AND pid <> pg_backend_pid();
+
 -- Create tournament database
 DROP DATABASE IF EXISTS tournament;
 CREATE DATABASE tournament;
@@ -10,14 +16,15 @@ CREATE DATABASE tournament;
 CREATE TABLE players
 (
 	id serial PRIMARY KEY,
-	name text
+	name text,
+	bye boolean	-- true if the player has not been assigned a bye before
 );
 
 -- Create matches table
 CREATE TABLE matches
 (
 	w_id serial REFERENCES players(id), -- winner id
-	l_id serial, -- loser id
+	l_id serial REFERENCES players(id), -- loser id
 	PRIMARY KEY(w_id, l_id)
 );
 
@@ -46,15 +53,6 @@ CREATE VIEW player_standings AS
 	JOIN matches_played
 	ON standings.id = matches_played.id
 	ORDER BY wins DESC;
-
--- Create view for finding players who are eligible for a bye
-CREATE VIEW bye_candidates AS
-	SELECT players.id, count(matches.l_id)
-	FROM players LEFT JOIN matches
-	ON players.id = matches.l_id
-	GROUP BY players.id
-	HAVING count(matches.l_id) = 0
-	ORDER BY players.id;
 
 -- Create view for computing OMW(Opponent Match Wins) of each player
 CREATE VIEW omw AS
