@@ -13,8 +13,7 @@ class Category(db.Model):
     __tablename__ = 'categories'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True, unique=True, nullable=False)
-    # description = db.Column(db.Text)
-    # add_time = db.Column(db.DateTime(), default=datetime.utcnow)
+    items = db.relationship('Item', backref='category', lazy='dynamic')
 
     def __repr__(self):
         return '<Category %r>' % self.name
@@ -23,6 +22,7 @@ class Category(db.Model):
 class Item(db.Model):
     __tablename__ = 'items'
     id = db.Column(db.Integer, primary_key=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
     name = db.Column(db.String(64), index=True, unique=True, nullable=False)
     description = db.Column(db.Text)
     add_time = db.Column(db.DateTime(), default=datetime.utcnow)

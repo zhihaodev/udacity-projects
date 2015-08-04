@@ -34,12 +34,11 @@
         success: function(result) {
         // Handle or verify the server response.
           if (result) {
-            // console.log(result)
-            $('html').html(result)
-            // $('#result').html('Login Successful!</br>'+ result + '</br>Redirecting...')
-            // setTimeout(function() {
-            //   window.location.href = "/";
-            // }, 4000);
+            console.log(result)
+            $('#result').html('Login Successful!</br>'+ result + '</br>Redirecting...')
+            setTimeout(function() {
+              window.location.href = result;
+            }, 4000);
           } else if (authResult['error']) {
             console.log('There was an error: ' + authResult['error']);
           } else {

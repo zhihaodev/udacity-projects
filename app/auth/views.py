@@ -113,19 +113,22 @@ def gconnect():
     output += '<img src="'
     output += pic_url
     output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
-    flash("you are now logged in as %s" % name)
+    # flash("you are now logged in as %s" % name)
+    flash('Log in successful.')
 
     # return render_template('auth/login_success.html', name=name,
     # pic_url=pic_url)
-    return redirect(url_for('main.index'))
+    # return redirect(next or url_for('main.index'))
+    return url_for('main.index', _external=True)
 
 
 @auth.route('/logout')
 @login_required
 def logout():
-    print "here!!!!!!!!!!!!!!!"
     logout_user()
+    flash('Log out successful.')
     return redirect(url_for('main.index'))
+
 
 def next_is_valid(next):
     return True
