@@ -1,11 +1,51 @@
 {% extends "base.html" %}
 
 
+<div class="list-group">
+  <a href="#" class="list-group-item active">
+    Cras justo odio
+  </a>
+  <a href="#" class="list-group-item">Dapibus ac facilisis in</a>
+  <a href="#" class="list-group-item">Morbi leo risus</a>
+  <a href="#" class="list-group-item">Porta ac consectetur ac</a>
+  <a href="#" class="list-group-item">Vestibulum at eros</a>
+</div>
+
+{% block styles %}
+{{ super() }}
+<style>
+.panel-heading {
+  height: 80px;
+  line-height: 60px;
+  overflow: hidden;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.5em;
+}
+
+.list-group-item {
+  text-align:center;
+}
+</style>
 {% endblock %}
 
+
 {% block content %}
-<div class="container">
-<div class="page-header">
-<h1>Hello, world!</h1> </div>
+<div class="col-md-4">
+  <div class="panel panel-success">
+    <div class="panel-heading">
+      Item Catalog
+    </div>
+    <div class="list-group">
+      <a href="#" class="list-group-item list-group-item-success active">
+        Cras justo odio
+      </a>
+      <a href="#" class="list-group-item">Dapibus ac facilisis in</a>
+      <a href="#" class="list-group-item">Morbi leo risus</a>
+      <a href="#" class="list-group-item">Porta ac consectetur ac</a>
+      <a href="#" class="list-group-item">Vestibulum at eros</a>
+    </div>
+  </div>
 </div>
+
 {% endblock %}
