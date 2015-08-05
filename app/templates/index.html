@@ -13,17 +13,29 @@
   font-size: 1.5em;
 }
 
-.list-group-item {
+#items .panel-heading {
   text-align: center;
+  font-weight: bold;
 }
 
 #items>.panel {
   margin-top: 80px;
 }
 
-.operations {
+#operations {
+  padding: 10px;
   text-align: right;
 }
+
+#operations a {
+  margin: 5px;
+}
+
+#items .list-group-item {
+  padding: 0;
+}
+
+
 
 </style>
 {% endblock %}
@@ -57,7 +69,6 @@
   <div class="col-md-8" id="items">
     <div class="panel panel-default">
       <div class="list-group"></div>
-      <!-- <div id="error_message"></div> -->
     </div>
     <div id="error_message"></div>
   </div>
@@ -88,11 +99,33 @@
       } else {
         for (i = 0; i < items.length; i++) {
           console.log(items[i].name);
+          // name = items[i].name;
           $("#items .list-group").show();
-          $("#items .list-group").append("<li class='list-group-item' id='item_" + items[i].id + "'><div class='panel-body'>"
-          + items[i].name + "</div><div class='wrapper'><div class='description panel-footer'>" + items[i].description
-          + "</div><div class='operations'>" + "<a href='#'><span class='label label-danger'>Edit</span></a>" + "</div></li>");
+          
+          $("#items .list-group").append(
+            $("<div></div>").addClass('list-group-item panel panel-success').attr('id', 'item_' + items[i].id)
+            .append($('<div></div>').addClass('panel-heading').html(items[i].name))
+            .append(
+                $('<div></div>').addClass('wrapper')
+                .append(
+                  $('<div></div>').addClass('description panel-body').html(items[i].description))
+                .append(
+                  {% if current_user.is_authenticated() %}
+                  
+                  $('<div></div>').attr('id', 'operations')
+                  .append(
+                    $('<a></a>').attr('href', '/' + name + '/' + items[i].name + '/edit').append(
+                        "<span class='label label-warning'>Edit</span>")
+                  )
+                  .append(
+                    $('<a></a>').attr('href', '/' + name + '/' + items[i].name + '/delete').append(
+                        "<span class='label label-danger'>Delete</span>")
+                  )
+                  {% endif %}
 
+                )
+            )
+          );
 
 
 
