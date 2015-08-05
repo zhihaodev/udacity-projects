@@ -17,8 +17,12 @@
   text-align: center;
 }
 
-#items .panel {
+#items>.panel {
   margin-top: 80px;
+}
+
+.operations {
+  text-align: right;
 }
 
 </style>
@@ -43,7 +47,7 @@
         {% for category in categories %}
         <a href="#" class="list-group-item list-group-item-success">
           <span class="badge"> {{ category.items.count() }}</span>
-          {{ category.name }}
+          <span class="category_name">{{ category.name }}</span>
         </a>
         {% endfor %}
       </div>
@@ -52,21 +56,10 @@
 
   <div class="col-md-8" id="items">
     <div class="panel panel-default">
-      <div class="list-group">
-
-        <a href="#" class="list-group-item">Dapibus ac facilisis in</a>
-        <a href="#" class="list-group-item">Morbi leo risus</a>
-        <a href="#" class="list-group-item">Porta ac consectetur ac</a>
-        <a href="#" class="list-group-item">Vestibulum at eros</a>
-
-<!--         {% for category in categories %}
-        <a href="#" class="list-group-item list-group-item-success">
-          <span class="badge"> {{ category.items.count() }}</span>
-          {{ category.name }}
-        </a>
-        {% endfor %} -->
-      </div>
+      <div class="list-group"></div>
+      <!-- <div id="error_message"></div> -->
     </div>
+    <div id="error_message"></div>
   </div>
 
 
@@ -80,6 +73,55 @@
   $(".list-group a").click(function() {
     $(this).parent().children().removeClass("active");
     $(this).addClass("active");
+    var name = jQuery(this).find(".category_name").text();
+    var items = $.ajax('/' + name, {
+      dataType: 'json'
+    }).done(function (data) {
+      console.log(data);
+      items = data.items;
+      var i;
+      $("#items .list-group").empty();
+      $("#error_message").empty();
+      if (items.length == 0) {
+        $("#items .list-group").hide();
+        $("#error_message").html("<h5>No item under category \"" + name + "\".</h5>");
+      } else {
+        for (i = 0; i < items.length; i++) {
+          console.log(items[i].name);
+          $("#items .list-group").show();
+          $("#items .list-group").append("<li class='list-group-item' id='item_" + items[i].id + "'><div class='panel-body'>"
+          + items[i].name + "</div><div class='wrapper'><div class='description panel-footer'>" + items[i].description
+          + "</div><div class='operations'>" + "<a href='#'><span class='label label-danger'>Edit</span></a>" + "</div></li>");
+
+
+
+
+          // $("#items .list-group").show();
+          // $("#items .list-group").append("<li class='list-group-item' id='item_" + items[i].id + "'><div class='panel-body'>"
+          // + items[i].name + "</div><div class='wrapper panel-footer'>" + items[i].description + "</div><div class='operations'></div></li>");
+
+
+
+        }
+        $(".wrapper").hide();
+      }
+    }).fail(function () {
+      $("#items .list-group").hide();
+      $("#error_message").html("<h5>Connection failed.</h5>");
+
+    });
+    
   });
+
+  $("#items .list-group").on("mouseenter", ".list-group-item", 
+    function() {
+      $(this).find(".wrapper").fadeIn("slow");
+  });
+  $("#items .list-group").on("mouseleave", ".list-group-item", 
+    function() {
+      $(this).find(".wrapper").hide();
+  });
+
 </script>
+
 {% endblock %}

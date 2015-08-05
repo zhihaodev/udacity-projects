@@ -54,7 +54,7 @@ def add_item():
 
 
 @main.route('/<category_name>/<item_name>', methods=['GET', 'POST'])
-def item_info():
+def item_info(category_name, item_name):
     item = Item.query.filter_by(name=item_name).first()
     if item is None or item.category.id != category_name:
         abort(404)
@@ -63,21 +63,19 @@ def item_info():
 
 @main.route('/<item_name>/edit', methods=['GET', 'POST'])
 @login_required
-def edit_item():
+def edit_item(item_name):
     pass
 
 
 @main.route('/<item_name>/delete')
 @login_required
-def delete_item():
+def delete_item(item_name):
     pass
 
 
 @main.route('/<category_name>')
-def list_items():
+def list_items(category_name):
     category = Category.query.filter_by(name=category_name).first()
     if category is None:
         abort(404)
-    return jsonify({
-        'items': [item.to_json() for item in category.items]
-    })
+    return jsonify({'items': [item.to_json() for item in category.items]})
