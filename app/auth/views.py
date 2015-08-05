@@ -21,7 +21,12 @@ def login():
                     for x in xrange(32))
     session['state'] = state
 
-    return render_template('auth/login.html', state=state, client_id=current_app.config['CLIENT_ID'])
+    next = request.args.get('next')
+    print next, 1111
+    if next is not None:
+        session['next'] = next
+
+    return render_template('auth/login.html', state=state, client_id=current_app.config['CLIENT_ID'], next=next)
 
 
 @auth.route('/gconnect', methods=['POST'])
@@ -102,23 +107,23 @@ def gconnect():
         db.session.add(user)
         db.session.commit()
     login_user(user, True)
-    next = request.args.get('next')
-    if not next_is_valid(next):
-        return abort(400)
 
-    output = ''
-    output += '<h1>Welcome, '
-    output += name
-    output += '!</h1>'
-    output += '<img src="'
-    output += pic_url
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    # next = request.args.get('next')
+    # print request.args
+    # print next, 22222
+    # if not next_is_valid(next):
+    #     return abort(400)
+
     # flash("you are now logged in as %s" % name)
     flash('Log in successful.')
+    next = session.get('next')
+    # print url_for('main.index', _external=True) + next[1:]
+    if next is not None:
+        if not next_is_valid(next):
+            return url_for('main.index', _external=True) + '404'
+        del session['next']
+        return url_for('main.index', _external=True) + next[1:]
 
-    # return render_template('auth/login_success.html', name=name,
-    # pic_url=pic_url)
-    # return redirect(next or url_for('main.index'))
     return url_for('main.index', _external=True)
 
 

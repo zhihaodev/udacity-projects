@@ -1,20 +1,10 @@
 {% extends "base.html" %}
 
 
-<div class="list-group">
-  <a href="#" class="list-group-item active">
-    Cras justo odio
-  </a>
-  <a href="#" class="list-group-item">Dapibus ac facilisis in</a>
-  <a href="#" class="list-group-item">Morbi leo risus</a>
-  <a href="#" class="list-group-item">Porta ac consectetur ac</a>
-  <a href="#" class="list-group-item">Vestibulum at eros</a>
-</div>
-
 {% block styles %}
 {{ super() }}
 <style>
-.panel-heading {
+#categories .panel-heading {
   height: 80px;
   line-height: 60px;
   overflow: hidden;
@@ -24,28 +14,72 @@
 }
 
 .list-group-item {
-  text-align:center;
+  text-align: center;
 }
+
+#items .panel {
+  margin-top: 80px;
+}
+
 </style>
 {% endblock %}
 
-
 {% block content %}
-<div class="col-md-4">
-  <div class="panel panel-success">
-    <div class="panel-heading">
-      Item Catalog
-    </div>
-    <div class="list-group">
-      <a href="#" class="list-group-item list-group-item-success active">
-        Cras justo odio
-      </a>
-      <a href="#" class="list-group-item">Dapibus ac facilisis in</a>
-      <a href="#" class="list-group-item">Morbi leo risus</a>
-      <a href="#" class="list-group-item">Porta ac consectetur ac</a>
-      <a href="#" class="list-group-item">Vestibulum at eros</a>
+<div class="container-fluid">
+  <div class="col-md-4" id="categories">
+    <div class="panel">
+      <div class="panel-heading">
+        Item Catalog
+      </div>
+      <div class="list-group">
+  <!--       <a href="#" class="list-group-item list-group-item-success active">
+          Cras justo odio
+        </a>
+        <a href="#" class="list-group-item">Dapibus ac facilisis in</a>
+        <a href="#" class="list-group-item">Morbi leo risus</a>
+        <a href="#" class="list-group-item">Porta ac consectetur ac</a>
+        <a href="#" class="list-group-item">Vestibulum at eros</a> -->
+
+        {% for category in categories %}
+        <a href="#" class="list-group-item list-group-item-success">
+          <span class="badge"> {{ category.items.count() }}</span>
+          {{ category.name }}
+        </a>
+        {% endfor %}
+      </div>
     </div>
   </div>
+
+  <div class="col-md-8" id="items">
+    <div class="panel panel-default">
+      <div class="list-group">
+
+        <a href="#" class="list-group-item">Dapibus ac facilisis in</a>
+        <a href="#" class="list-group-item">Morbi leo risus</a>
+        <a href="#" class="list-group-item">Porta ac consectetur ac</a>
+        <a href="#" class="list-group-item">Vestibulum at eros</a>
+
+<!--         {% for category in categories %}
+        <a href="#" class="list-group-item list-group-item-success">
+          <span class="badge"> {{ category.items.count() }}</span>
+          {{ category.name }}
+        </a>
+        {% endfor %} -->
+      </div>
+    </div>
+  </div>
+
+
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script type="text/javascript">
+  $(".list-group a").click(function() {
+    $(this).parent().children().removeClass("active");
+    $(this).addClass("active");
+  });
+</script>
 {% endblock %}

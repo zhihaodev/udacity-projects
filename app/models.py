@@ -27,6 +27,13 @@ class Item(db.Model):
     description = db.Column(db.Text)
     add_time = db.Column(db.DateTime(), default=datetime.utcnow)
 
+    def to_json(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description
+        }
+
     def __repr__(self):
         return '<Item %r>' % self.name
 
