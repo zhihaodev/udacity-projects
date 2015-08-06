@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block content %}
+{% block page_content %}
 
 <div class="page-header">
 	<h3>Are you sure you want delete item "{{ item_name }}"?</h3>
 
-</div>
+</div >
 {{ wtf.quick_form(form) }}
 
 

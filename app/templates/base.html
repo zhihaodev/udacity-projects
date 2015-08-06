@@ -2,6 +2,21 @@
 
 {% block title %}Item Catalog{% endblock %}
 
+
+{% block styles %}
+
+{{ super() }}
+<style>
+body {
+  /*width: 100%;*/
+  /*height: 1000px;*/
+}
+
+
+</style>
+{% endblock %}
+
+
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
@@ -49,4 +64,20 @@
     </div>
   </div>
 </nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+  {% for message in get_flashed_messages() %}
+  <div class="alert alert-warning">
+      <button type="button" class="close" aria-label="Close"><span aria-hidden="true" data-dismiss="alert">&times;</button>
+      {{ message }}
+  </div>
+
+  {% endfor %}
+
+  {% block page_content %}
+  {% endblock %}
+</div>
 {% endblock %}

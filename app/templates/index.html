@@ -2,6 +2,7 @@
 
 
 {% block styles %}
+
 {{ super() }}
 <style>
 #categories .panel-heading {
@@ -34,47 +35,35 @@
 #items .list-group-item {
   padding: 0;
 }
-
-
-
 </style>
+
 {% endblock %}
 
-{% block content %}
-<div class="container-fluid">
-  <div class="col-md-4" id="categories">
-    <div class="panel">
-      <div class="panel-heading">
-        Item Catalog
-      </div>
-      <div class="list-group">
-  <!--       <a href="#" class="list-group-item list-group-item-success active">
-          Cras justo odio
-        </a>
-        <a href="#" class="list-group-item">Dapibus ac facilisis in</a>
-        <a href="#" class="list-group-item">Morbi leo risus</a>
-        <a href="#" class="list-group-item">Porta ac consectetur ac</a>
-        <a href="#" class="list-group-item">Vestibulum at eros</a> -->
+{% block page_content %}
 
-        {% for category in categories %}
-        <a href="#" class="list-group-item list-group-item-success">
-          <span class="badge"> {{ category.items.count() }}</span>
-          <span class="category_name">{{ category.name }}</span>
-        </a>
-        {% endfor %}
-      </div>
+<div class="col-md-4" id="categories">
+  <div class="panel">
+    <div class="panel-heading">
+      Item Catalog
+    </div>
+    <div class="list-group">
+      {% for category in categories %}
+      <a href="#" class="list-group-item list-group-item-success">
+        <span class="badge"> {{ category.items.count() }}</span>
+        <span class="category_name">{{ category.name }}</span>
+      </a>
+      {% endfor %}
     </div>
   </div>
-
-  <div class="col-md-8" id="items">
-    <div class="panel panel-default">
-      <div class="list-group"></div>
-    </div>
-    <div id="error_message"></div>
-  </div>
-
-
 </div>
+
+<div class="col-md-8" id="items">
+  <div class="panel panel-default">
+    <div class="list-group"></div>
+  </div>
+  <div id="error_message"></div>
+</div>
+
 
 {% endblock %}
 
@@ -99,7 +88,6 @@
       } else {
         for (i = 0; i < items.length; i++) {
           console.log(items[i].name);
-          // name = items[i].name;
           $("#items .list-group").show();
           
           $("#items .list-group").append(
@@ -111,7 +99,7 @@
                   $('<div></div>').addClass('description panel-body').html(items[i].description))
                 .append(
                   {% if current_user.is_authenticated() %}
-                  
+
                   $('<div></div>').attr('id', 'operations')
                   .append(
                     $('<a></a>').attr('href', '/' + name + '/' + items[i].name + '/edit').append(
@@ -126,14 +114,6 @@
                 )
             )
           );
-
-
-
-          // $("#items .list-group").show();
-          // $("#items .list-group").append("<li class='list-group-item' id='item_" + items[i].id + "'><div class='panel-body'>"
-          // + items[i].name + "</div><div class='wrapper panel-footer'>" + items[i].description + "</div><div class='operations'></div></li>");
-
-
 
         }
         $(".wrapper").hide();
