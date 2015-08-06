@@ -15,6 +15,12 @@ class Category(db.Model):
     name = db.Column(db.String(64), index=True, unique=True, nullable=False)
     items = db.relationship('Item', backref='category', lazy='dynamic')
 
+    def to_json():
+        return {
+            'id': self.id,
+            'name': self.name
+        }
+
     def __repr__(self):
         return '<Category %r>' % self.name
 

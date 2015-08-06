@@ -3,7 +3,7 @@ from . import main
 from .. import db
 from ..models import Category, Item
 from flask.ext.login import login_required
-from .forms import AddOrEditItemForm, AddCategoryForm, DeleteItemForm
+from .forms import AddOrEditItemForm, AddOrEditCategoryForm, DeleteForm
 
 
 @main.route('/')
@@ -15,7 +15,7 @@ def index():
 @main.route('/add_category', methods=['GET', 'POST'])
 @login_required
 def add_category():
-    form = AddCategoryForm()
+    form = AddOrEditCategoryForm()
     if form.validate_on_submit():
         new_category = Category(name=form.name.data)
         try:
@@ -70,10 +70,32 @@ def item_info(category_name, item_name):
     return item.description
 
 
+@main.route('/<category_name>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_category(category_name):
+    category = Category.query.filter_by(name=category_name).first()
+    if category is None:
+        abort(404)
+    form = AddOrEditCategoryForm()
+    if form.validate_on_submit():
+        category.name = form.name.data
+        try:
+            db.session.commit()
+        except:
+            flash(
+                ("Failed to edit category \"%s\"."
+                 " Make sure that the category name is unique.") % category.name)
+        else:
+            flash("Category \"%s\" has been edited." % category.name)
+        finally:
+            return redirect(url_for('.index'))
+    form.name.data = category.name
+    return render_template('add_or_edit.html', form=form)
+
+
 @main.route('/<category_name>/<item_name>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_item(category_name, item_name):
-
     item = Item.query.filter_by(name=item_name).first()
     if item is None or item.category.name != category_name:
         abort(404)
@@ -100,13 +122,34 @@ def edit_item(category_name, item_name):
     return render_template('add_or_edit.html', form=form)
 
 
+@main.route('/<category_name>/delete', methods=['GET', 'POST'])
+@login_required
+def delete_category(category_name):
+    category = Category.query.filter_by(name=category_name).first()
+    if category is None:
+        abort(404)
+    form = DeleteForm()
+    if form.validate_on_submit():
+        try:
+            db.session.delete(category)
+            db.session.commit()
+        except:
+            flash(("Failed to delete category \"%s\".") % category.name)
+        else:
+            flash("Category \"%s\" has been deleted." % category.name)
+        finally:
+            return redirect(url_for('.index'))
+    return render_template('delete.html', form=form, name=category_name)
+
+
+
 @main.route('/<category_name>/<item_name>/delete', methods=['GET', 'POST'])
 @login_required
 def delete_item(category_name, item_name):
     item = Item.query.filter_by(name=item_name).first()
     if item is None or item.category.name != category_name:
         abort(404)
-    form = DeleteItemForm()
+    form = DeleteForm()
     if form.validate_on_submit():
         try:
             db.session.delete(item)
@@ -117,7 +160,6 @@ def delete_item(category_name, item_name):
             flash("Item \"%s\" has been deleted." % item.name)
         finally:
             return redirect(url_for('.index'))
-
     return render_template('delete.html', form=form, item_name=item_name)
 
 

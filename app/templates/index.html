@@ -1,16 +1,46 @@
 {% extends "base.html" %}
 
+{% block styles %}
+{{ super() }}
+
+<style type="text/css">
+  {% if not current_user.is_authenticated() %}
+  .add_btn, .category_ops {
+    display: none;
+  }
+  {% endif %}
+
+  .category_ops {
+    text-align: right;
+    margin-top: 5px;
+    margin-bottom: 15px;
+  }
+
+</style>
+
+{% endblock %}
+
+
 {% block page_content %}
 
 <div class="col-md-4" id="categories">
   <div class="panel">
     <div class="list-group">
+
       {% for category in categories %}
-      <a href="#" class="list-group-item list-group-item-success">
-        <span class="badge"> {{ category.items.count() }}</span>
+
+      <a class="list-group-item list-group-item-success">
+        <span class="badge">{{ category.items.count() }}</span>
         <span class="category_name">{{ category.name }}</span>
       </a>
+
+      <div class="category_ops" style="display:none;">
+        <a href="{{ url_for('main.edit_category', category_name=category.name) }}" class="btn btn-warning btn-xs">Edit</a>
+        <a href="{{ url_for('main.delete_category', category_name=category.name) }}" class="btn btn-danger btn-xs">Delete</a>
+      </div>
+
       {% endfor %}
+
     </div>
   </div>
 
@@ -24,8 +54,10 @@
   <div class="error_msg"></div>
   <div class="panel panel-default">
     <div class="list-group"></div>
-  </div>
+  </div> 
+
   <div class="add_btn"></div>
+
 </div>
 
 {% endblock %}
@@ -33,12 +65,16 @@
 {% block scripts %}
 {{ super() }}
 <script type="text/javascript">
-  $("#categories .list-group a").click(function() {
+  $("#categories .list-group .list-group-item").click(function() {
     var name = $(this).find(".category_name").text();
     $("#items .add_btn").html(
       "<a href=\"{{ url_for('main.add_item') }}?category_name=" + name + "\" class='btn btn-primary'>Add Item</a>"
     );
-    $(this).parent().children().removeClass("active");
+    
+    $(this).siblings(".category_ops").hide();
+    $(this).next().css("display", "block").hide().fadeIn("fast");
+
+    $(this).siblings().removeClass("active");
     $(this).addClass("active");
     
     $.ajax('/' + name, {
@@ -57,7 +93,7 @@
             <button type='button' class='close' aria-label='Close'>\
             <span aria-hidden='true' data-dismiss='alert'>&times;</button>\
             There is no item under this category.</div>"
-        ).fadeTo(2000, 500).slideUp(500, function(){
+        ).fadeTo(1000, 500).slideUp(500, function(){
             $(".error_msg").alert('close');
         });
       } else {
@@ -77,7 +113,7 @@
                   .append(
                     $('<a></a>').attr('href', '/' + name + '/' + items[i].name + '/edit').addClass('btn btn-warning btn-xs').text('Edit'))
                   .append(    
-                    $('<a></a>').attr('href', '/' + name + '/' + items[i].name + '/edit').addClass('btn btn-danger btn-xs').text('Delete')
+                    $('<a></a>').attr('href', '/' + name + '/' + items[i].name + '/delete').addClass('btn btn-danger btn-xs').text('Delete')
                   )
                   {% endif %}
                 )
@@ -107,6 +143,19 @@
     function() {
       $(this).find(".wrapper").hide();
   });
+
+  // $(".category_ops").hide();
+
+
+
+ // $("#items .list-group").on("mouseenter", ".list-group-item", 
+ //    function() {
+ //      $(this).find(".wrapper").fadeIn("slow");
+ //  });
+ //  $("#items .list-group").on("mouseleave", ".list-group-item", 
+ //    function() {
+ //      $(this).find(".wrapper").hide();
+ //  });
 
 </script>
 

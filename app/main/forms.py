@@ -3,9 +3,9 @@ from wtforms.validators import Required, Length
 from wtforms import StringField, SubmitField, TextAreaField, SelectField
 
 
-class AddCategoryForm(Form):
+class AddOrEditCategoryForm(Form):
 
-    """docstring for AddCategoryForm"""
+    """docstring for AddOrEditCategoryForm"""
 
     name = StringField('Category name', validators=[Required(), Length(1, 64)])
     submit = SubmitField('Submit')
@@ -25,8 +25,8 @@ class AddOrEditItemForm(Form):
     category = SelectField('Category', coerce=int)
     submit = SubmitField('Submit')
 
-class DeleteItemForm(Form):
-        """docstring for DeleteItemForm"""
+class DeleteForm(Form):
+        """docstring for DeleteForm"""
         
         submit = SubmitField('Submit')
 
