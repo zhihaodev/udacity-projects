@@ -1,4 +1,4 @@
-from flask import abort, render_template, flash, redirect, url_for, jsonify
+from flask import abort, render_template, flash, redirect, url_for, jsonify, request
 from . import main
 from .. import db
 from ..models import Category, Item
@@ -26,7 +26,7 @@ def add_category():
                 ("Failed to add category \"%s\"."
                  " Make sure that the category name is unique.") % new_category.name)
         else:
-            flash("A new category \"%s\" has been added." % new_item.name)
+            flash("A new category \"%s\" has been added." % new_category.name)
         finally:
             return redirect(url_for('.index'))
     return render_template('add_or_edit.html', form=form)
@@ -50,6 +50,15 @@ def add_item():
             flash("A new item \"%s\" has been added." % new_item.name)
         finally:
             return redirect(url_for('.index'))
+
+    category_name = request.args.get('category_name')
+    if category_name is not None:
+        default_category = Category.query.filter_by(name=category_name).first()
+        if default_category is None:
+            flash("Wrong parameter(s).")
+            return redirect(url_for('.index'))
+        form.category.data = default_category.id
+
     return render_template('add_or_edit.html', form=form)
 
 

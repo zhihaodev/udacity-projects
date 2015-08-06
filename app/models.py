@@ -30,6 +30,7 @@ class Item(db.Model):
     def to_json(self):
         return {
             'id': self.id,
+            'category_id': self.category.id,
             'name': self.name,
             'description': self.description
         }

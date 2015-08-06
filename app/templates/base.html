@@ -2,23 +2,9 @@
 
 {% block title %}Item Catalog{% endblock %}
 
-
-{% block styles %}
-
-{{ super() }}
-<style>
-body {
-  /*width: 100%;*/
-  /*height: 1000px;*/
-}
-
-
-</style>
-{% endblock %}
-
-
 {% block head %}
 {{ super() }}
+<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300' rel='stylesheet' type='text/css'>
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
 {% endblock %}
 
@@ -54,11 +40,11 @@ body {
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><img src="{{ current_user.pic_url }}" height="20"> {{ current_user.name }} <span class="caret"></span></a>
           <ul class="dropdown-menu">
-            <li><a href="{{ url_for('auth.logout') }}">Sign out</a></li>
+            <li><a href="{{ url_for('auth.logout') }}">Sign Out</a></li>
           </ul>
         </li>
         {% else %}
-        <li><a href="{{ url_for('auth.login') }}">Sign in</a></li>
+        <li><a href="{{ url_for('auth.login') }}">Sign In</a></li>
         {% endif %}
       </ul>
     </div>
@@ -67,17 +53,42 @@ body {
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
+
+  <div class="banner">
+
+    <div class="banner_text">
+      <strong>Item Catalog</strong>
+    </div>
+
+  </div>
+
+
+
+<div class="container-fluid page_content">
 
   {% for message in get_flashed_messages() %}
-  <div class="alert alert-warning">
+  <div class="alert alert-warning fade in error_msg">
       <button type="button" class="close" aria-label="Close"><span aria-hidden="true" data-dismiss="alert">&times;</button>
       {{ message }}
   </div>
-
   {% endfor %}
-
+  
   {% block page_content %}
   {% endblock %}
 </div>
 {% endblock %}
+
+
+{% block scripts %}
+{{ super() }}
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    // http://stackoverflow.com/questions/23101966/bootstrap-alert-auto-close
+    $(".error_msg").fadeTo(1000, 500).slideUp(500, function(){
+        $(".error_msg").alert('close');
+    });
+  });
+</script>
+{% endblock %}
+

@@ -1,51 +1,9 @@
 {% extends "base.html" %}
 
-
-{% block styles %}
-
-{{ super() }}
-<style>
-#categories .panel-heading {
-  height: 80px;
-  line-height: 60px;
-  overflow: hidden;
-  text-align: center;
-  font-weight: bold;
-  font-size: 1.5em;
-}
-
-#items .panel-heading {
-  text-align: center;
-  font-weight: bold;
-}
-
-#items>.panel {
-  margin-top: 80px;
-}
-
-#operations {
-  padding: 10px;
-  text-align: right;
-}
-
-#operations a {
-  margin: 5px;
-}
-
-#items .list-group-item {
-  padding: 0;
-}
-</style>
-
-{% endblock %}
-
 {% block page_content %}
 
 <div class="col-md-4" id="categories">
   <div class="panel">
-    <div class="panel-heading">
-      Item Catalog
-    </div>
     <div class="list-group">
       {% for category in categories %}
       <a href="#" class="list-group-item list-group-item-success">
@@ -55,41 +13,57 @@
       {% endfor %}
     </div>
   </div>
+
+  <div class="add_btn">
+    <a href="{{ url_for('main.add_category') }}" class="btn btn-primary">Add Category</a>
+  </div>
+  
 </div>
 
 <div class="col-md-8" id="items">
+  <div class="error_msg"></div>
   <div class="panel panel-default">
     <div class="list-group"></div>
   </div>
-  <div id="error_message"></div>
+  <div class="add_btn"></div>
 </div>
-
 
 {% endblock %}
 
 {% block scripts %}
 {{ super() }}
 <script type="text/javascript">
-  $(".list-group a").click(function() {
+  $("#categories .list-group a").click(function() {
+    var name = $(this).find(".category_name").text();
+    $("#items .add_btn").html(
+      "<a href=\"{{ url_for('main.add_item') }}?category_name=" + name + "\" class='btn btn-primary'>Add Item</a>"
+    );
     $(this).parent().children().removeClass("active");
     $(this).addClass("active");
-    var name = jQuery(this).find(".category_name").text();
-    var items = $.ajax('/' + name, {
+    
+    $.ajax('/' + name, {
+      data: name,
       dataType: 'json'
     }).done(function (data) {
       console.log(data);
       items = data.items;
       var i;
       $("#items .list-group").empty();
-      $("#error_message").empty();
+
       if (items.length == 0) {
-        $("#items .list-group").hide();
-        $("#error_message").html("<h5>No item under category \"" + name + "\".</h5>");
+        $("#items > .panel").hide();
+        $("#items .error_msg").html(
+          "<div class='alert alert-warning fade in'>\
+            <button type='button' class='close' aria-label='Close'>\
+            <span aria-hidden='true' data-dismiss='alert'>&times;</button>\
+            There is no item under this category.</div>"
+        ).fadeTo(2000, 500).slideUp(500, function(){
+            $(".error_msg").alert('close');
+        });
       } else {
+        $("#items .error_msg").empty();
+        $("#items > .panel").show();
         for (i = 0; i < items.length; i++) {
-          console.log(items[i].name);
-          $("#items .list-group").show();
-          
           $("#items .list-group").append(
             $("<div></div>").addClass('list-group-item panel panel-success').attr('id', 'item_' + items[i].id)
             .append($('<div></div>').addClass('panel-heading').html(items[i].name))
@@ -99,28 +73,27 @@
                   $('<div></div>').addClass('description panel-body').html(items[i].description))
                 .append(
                   {% if current_user.is_authenticated() %}
-
                   $('<div></div>').attr('id', 'operations')
                   .append(
-                    $('<a></a>').attr('href', '/' + name + '/' + items[i].name + '/edit').append(
-                        "<span class='label label-warning'>Edit</span>")
-                  )
-                  .append(
-                    $('<a></a>').attr('href', '/' + name + '/' + items[i].name + '/delete').append(
-                        "<span class='label label-danger'>Delete</span>")
+                    $('<a></a>').attr('href', '/' + name + '/' + items[i].name + '/edit').addClass('btn btn-warning btn-xs').text('Edit'))
+                  .append(    
+                    $('<a></a>').attr('href', '/' + name + '/' + items[i].name + '/edit').addClass('btn btn-danger btn-xs').text('Delete')
                   )
                   {% endif %}
-
                 )
             )
           );
-
         }
         $(".wrapper").hide();
       }
     }).fail(function () {
-      $("#items .list-group").hide();
-      $("#error_message").html("<h5>Connection failed.</h5>");
+      $("#items > .panel").hide();
+      $("#items .error_msg").html(
+        "<div class='alert alert-warning fade in'>\
+          <button type='button' class='close' aria-label='Close'>\
+          <span aria-hidden='true' data-dismiss='alert'>&times;</button>\
+          Connection failed.</div>"
+      );
 
     });
     
