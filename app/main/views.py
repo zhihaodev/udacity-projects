@@ -175,7 +175,7 @@ def delete_item(category_name, item_name):
             flash("Item \"%s\" has been deleted." % item.name)
         finally:
             return redirect(url_for('.index'))
-    return render_template('delete.html', form=form, item_name=item_name)
+    return render_template('delete.html', form=form, name=item_name)
 
 
 @main.route('/<category_name>')

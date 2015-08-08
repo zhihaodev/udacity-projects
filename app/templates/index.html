@@ -5,7 +5,7 @@
 
 <style type="text/css">
   {% if not current_user.is_authenticated() %}
-  .add_btn, .category_ops {
+  .add_btn {
     display: none;
   }
   {% endif %}
@@ -14,6 +14,7 @@
     text-align: right;
     margin-top: 5px;
     margin-bottom: 15px;
+    display: none;
   }
 
 </style>
@@ -71,8 +72,10 @@
       "<a href=\"{{ url_for('main.add_item') }}?category_name=" + name + "\" class='btn btn-primary'>Add Item</a>"
     );
     
+    {% if current_user.is_authenticated() %}
     $(this).siblings(".category_ops").hide();
     $(this).next().css("display", "block").hide().fadeIn("fast");
+    {% endif %}
 
     $(this).siblings().removeClass("active");
     $(this).addClass("active");
