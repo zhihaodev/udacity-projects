@@ -41,7 +41,9 @@ class Item(db.Model):
             'id': self.id,
             'category_id': self.category.id,
             'name': self.name,
-            'description': self.description
+            'description': self.description,
+            'img_url': self.img_url,
+            'img_deletehash': self.img_deletehash
         }
 
     def __repr__(self):

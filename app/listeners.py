@@ -8,6 +8,7 @@ def receive_before_delete(mapper, connection, target):
     print "Deleting item..." + target.name
 
     if target.img_deletehash is not None:
+        print "Deleting uploaded image..."
         if not delete_image(target.img_deletehash):
             flash("Failed to delete %s." % target.name)
             abort(501)

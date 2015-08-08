@@ -6,7 +6,7 @@ from flask.ext.login import login_required
 from .forms import AddOrEditItemForm, AddOrEditCategoryForm, DeleteForm
 from werkzeug import secure_filename
 from base64 import b64encode
-from ..helpers import upload_image
+from ..helpers import upload_image, delete_image
 import requests
 
 
@@ -37,7 +37,7 @@ def add_category():
 
 
 @main.route('/add_item', methods=['GET', 'POST'])
-# @login_required
+@login_required
 def add_item():
     form = AddOrEditItemForm(Category.query.order_by(Category.name).all())
     img_upload_name = None
@@ -52,8 +52,8 @@ def add_item():
             img_url, img_deletehash = upload_image(form.img_upload.data)
             print "img_url: " + img_url
             print "img_deletehash: " + img_deletehash
-            if img_url is None and img_deletehash is None:
-                flash("Upload image failed. Add item failed.")
+            if img_url is None or img_deletehash is None:
+                flash("Failed to upload image.")
                 return redirect(url_for('.index'))
 
         elif form.img_url.data != '':
@@ -117,9 +117,34 @@ def edit_item(category_name, item_name):
         abort(404)
     form = AddOrEditItemForm(Category.query.order_by(Category.name).all())
     if form.validate_on_submit():
+        # item.name = form.name.data
+        # item.description = form.description.data
+        # item.category = Category.query.get(form.category.data)
+
+        img_upload_name = secure_filename(form.img_upload.data.filename)
+        img_deletehash = None
+        img_url = None
+
+        if item.img_deletehash is not None and not delete_image(item.img_deletehash):
+            flash("Failed to edit item \"%s\"." % item.name)
+            return redirect(url_for('.index'))
+
+        if img_upload_name != '':
+            img_url, img_deletehash = upload_image(form.img_upload.data)
+            print "img_url: " + img_url
+            print "img_deletehash: " + img_deletehash
+            if img_url is None or img_deletehash is None:
+                flash("Failed to upload image.")
+                return redirect(url_for('.index'))
+
+        elif form.img_url.data != '':
+            img_url = form.img_url.data
+
         item.name = form.name.data
         item.description = form.description.data
         item.category = Category.query.get(form.category.data)
+        item.img_url = img_url
+        item.img_deletehash = img_deletehash
 
         try:
             db.session.commit()
@@ -135,6 +160,8 @@ def edit_item(category_name, item_name):
     form.name.data = item.name
     form.description.data = item.description
     form.category.data = item.category.id
+    form.img_url.data = item.img_url
+
     return render_template('add_or_edit.html', form=form)
 
 
