@@ -10,13 +10,28 @@
   }
   {% endif %}
 
+  .panel > .panel-heading {
+     background-color: #DCF3D6;
+  }
+
+  .panel-body > .item_ops {
+    text-align: right;
+    margin-top: 10px;
+    margin-bottom: 0px;
+  }
+
+  .panel-body > .item_img {
+    display: none;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
   .category_ops {
     text-align: right;
     margin-top: 5px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     display: none;
   }
-
 </style>
 
 {% endblock %}
@@ -52,12 +67,41 @@
 </div>
 
 <div class="col-md-8" id="items">
-  <div class="error_msg"></div>
-  <div class="panel panel-default">
-    <div class="list-group"></div>
-  </div> 
 
-  <div class="add_btn"></div>
+
+  <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+  <!--   <div class="panel panel-default">
+      <div class="panel-heading" role="tab" id="headingOne">
+        <h4 class="panel-title">
+          <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne" >
+            Collapsible Group Item #1
+          </a>
+        </h4>
+      </div>
+      <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+        <div class="panel-body">
+
+          <div class="item_img">
+            <img src='http://flask.pocoo.org/docs/0.10/_static/flask.png'  alt='image' />
+          </div>
+
+          Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+
+
+          <div class='item_ops'>
+            <a href="#" class="btn btn-info btn-xs" onclick="showImage()">Info</a>
+            <a href="#" class="btn btn-warning btn-xs">Edit</a>
+            <a href="#" class="btn btn-danger btn-xs">Delete</a>
+          </div>
+          
+        </div>
+      </div>
+    </div> -->
+
+  </div>
+
+
+<div class="add_btn"></div>
 
 </div>
 
@@ -71,6 +115,8 @@
     $("#items .add_btn").html(
       "<a href=\"{{ url_for('main.add_item') }}?category_name=" + name + "\" class='btn btn-primary'>Add Item</a>"
     );
+
+    $(".panel-group").empty();
     
     {% if current_user.is_authenticated() %}
     $(this).siblings(".category_ops").hide();
@@ -86,11 +132,11 @@
     }).done(function (data) {
       console.log(data);
       items = data.items;
+      console.log(items);
       var i;
       $("#items .list-group").empty();
 
       if (items.length == 0) {
-        $("#items > .panel").hide();
         $("#items .error_msg").html(
           "<div class='alert alert-warning fade in'>\
             <button type='button' class='close' aria-label='Close'>\
@@ -100,33 +146,43 @@
             $(".error_msg").alert('close');
         });
       } else {
-        $("#items .error_msg").empty();
-        $("#items > .panel").show();
+
+        var i;
         for (i = 0; i < items.length; i++) {
-          $("#items .list-group").append(
-            $("<div></div>").addClass('list-group-item panel panel-success').attr('id', 'item_' + items[i].id)
-            .append($('<div></div>').addClass('panel-heading').html(items[i].name))
-            .append(
-                $('<div></div>').addClass('wrapper')
-                .append(
-                  $('<div></div>').addClass('description panel-body').html(items[i].description))
-                .append(
-                  {% if current_user.is_authenticated() %}
-                  $('<div></div>').attr('id', 'operations')
-                  .append(
-                    $('<a></a>').attr('href', '/' + name + '/' + items[i].name + '/edit').addClass('btn btn-warning btn-xs').text('Edit'))
-                  .append(    
-                    $('<a></a>').attr('href', '/' + name + '/' + items[i].name + '/delete').addClass('btn btn-danger btn-xs').text('Delete')
-                  )
-                  {% endif %}
-                )
-            )
-          );
+          groupItem = "<div class='panel panel-default'>\
+              <div class='panel-heading' role='tab' id='heading_" + items[i].id + "'>\
+                <h4 class='panel-title'>\
+                  <a class='collapsed' role='button' data-toggle='collapse' data-parent='#accordion'\
+                  href='#collapse_" + items[i].id + "' aria-expanded='false' aria-controls='collapse_" + items[i].id + "'>"
+                  + items[i].name +
+                  "</a>\
+                </h4>\
+              </div>\
+              <div id='collapse_" + items[i].id + "' class='panel-collapse collapse' role='tabpanel'\
+              aria-labelledby='heading_"+ items[i].name + "'>\
+                <div class='panel-body'>\
+                  <div class='item_img'>\
+                    <img src='" + items[i].img_url + "'  alt='image' />\
+                  </div>"
+                  + items[i].description +
+                  "<div class='item_ops'>\
+                    <a href='#' class='btn btn-info btn-xs' onclick='showImage()'>Info</a>\
+                    <a href='#' class='btn btn-warning btn-xs'>Edit</a>\
+                    <a href='#' class='btn btn-danger btn-xs'>Delete</a>\
+                  </div>"
+                "</div>\
+              </div>\
+            </div>";
+
+
+          $('.panel-group').append(groupItem);
+
+
         }
-        $(".wrapper").hide();
+       
+
       }
     }).fail(function () {
-      $("#items > .panel").hide();
       $("#items .error_msg").html(
         "<div class='alert alert-warning fade in'>\
           <button type='button' class='close' aria-label='Close'>\
@@ -138,27 +194,13 @@
     
   });
 
-  $("#items .list-group").on("mouseenter", ".list-group-item", 
-    function() {
-      $(this).find(".wrapper").fadeIn("slow");
-  });
-  $("#items .list-group").on("mouseleave", ".list-group-item", 
-    function() {
-      $(this).find(".wrapper").hide();
-  });
 
-  // $(".category_ops").hide();
+  function showImage() {
+    $("#items .item_img").fadeToggle();
+  }
 
 
 
- // $("#items .list-group").on("mouseenter", ".list-group-item", 
- //    function() {
- //      $(this).find(".wrapper").fadeIn("slow");
- //  });
- //  $("#items .list-group").on("mouseleave", ".list-group-item", 
- //    function() {
- //      $(this).find(".wrapper").hide();
- //  });
 
 </script>
 
