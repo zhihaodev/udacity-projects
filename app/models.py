@@ -13,7 +13,8 @@ class Category(db.Model):
     __tablename__ = 'categories'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True, unique=True, nullable=False)
-    items = db.relationship('Item', backref='category', lazy='dynamic')
+    items = db.relationship(
+        'Item', backref='category', lazy='dynamic', cascade='all, delete-orphan')
 
     def to_json():
         return {
@@ -31,6 +32,8 @@ class Item(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
     name = db.Column(db.String(64), index=True, unique=True, nullable=False)
     description = db.Column(db.Text, nullable=False)
+    img_url = db.Column(db.String(128))
+    img_deletehash = db.Column(db.String(32))
     add_time = db.Column(db.DateTime(), default=datetime.utcnow)
 
     def to_json(self):
