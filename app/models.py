@@ -1,3 +1,4 @@
+from flask import url_for
 from . import db
 from datetime import datetime
 from app import lm
@@ -16,10 +17,10 @@ class Category(db.Model):
     items = db.relationship(
         'Item', backref='category', lazy='dynamic', cascade='all, delete-orphan')
 
-    def to_json():
+    def to_json(self):
         return {
-            'id': self.id,
-            'name': self.name
+            'name': self.name,
+            'items': url_for('api.get_category_items', id=self.id, _external=True)
         }
 
     def __repr__(self):
@@ -38,12 +39,11 @@ class Item(db.Model):
 
     def to_json(self):
         return {
-            'id': self.id,
-            'category_id': self.category.id,
             'name': self.name,
+            'category': url_for('api.get_category',
+                                id=self.category_id, _external=True),
             'description': self.description,
-            'img_url': self.img_url,
-            'img_deletehash': self.img_deletehash
+            'img_url': self.img_url
         }
 
     def __repr__(self):

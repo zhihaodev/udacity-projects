@@ -86,7 +86,7 @@ def add_item():
     return render_template('add_or_edit.html', form=form, filename=img_upload_name)
 
 
-@main.route('/<category_name>/edit', methods=['GET', 'POST'])
+@main.route('/categories/<category_name>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_category(category_name):
     category = Category.query.filter_by(name=category_name).first()
@@ -109,11 +109,11 @@ def edit_category(category_name):
     return render_template('add_or_edit.html', form=form)
 
 
-@main.route('/<category_name>/<item_name>/edit', methods=['GET', 'POST'])
+@main.route('/items/<item_name>/edit', methods=['GET', 'POST'])
 @login_required
-def edit_item(category_name, item_name):
+def edit_item(item_name):
     item = Item.query.filter_by(name=item_name).first()
-    if item is None or item.category.name != category_name:
+    if item is None:
         abort(404)
     form = AddOrEditItemForm(Category.query.order_by(Category.name).all())
     if form.validate_on_submit():
@@ -165,7 +165,7 @@ def edit_item(category_name, item_name):
     return render_template('add_or_edit.html', form=form)
 
 
-@main.route('/<category_name>/delete', methods=['GET', 'POST'])
+@main.route('/categories/<category_name>/delete', methods=['GET', 'POST'])
 @login_required
 def delete_category(category_name):
     category = Category.query.filter_by(name=category_name).first()
@@ -185,11 +185,11 @@ def delete_category(category_name):
     return render_template('delete.html', form=form, name=category_name)
 
 
-@main.route('/<category_name>/<item_name>/delete', methods=['GET', 'POST'])
+@main.route('/items/<item_name>/delete', methods=['GET', 'POST'])
 @login_required
-def delete_item(category_name, item_name):
+def delete_item(item_name):
     item = Item.query.filter_by(name=item_name).first()
-    if item is None or item.category.name != category_name:
+    if item is None:
         abort(404)
     form = DeleteForm()
     if form.validate_on_submit():
