@@ -12,8 +12,6 @@ This is a web application that provides a list of items within a variety of cate
 
 - Install all required modules: `pip install -r requirements.txt`.
 
-- Regenerate the database: `python manage.py db upgrade`.
-
 - Run the web server: `python manage.py runserver`.
 
 - Open http://localhost:5000/ to check out the item catalog website.
