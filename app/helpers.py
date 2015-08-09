@@ -1,3 +1,4 @@
+"""Helper functions for utilizing imgur api service."""
 import requests
 from base64 import b64encode
 
@@ -7,6 +8,11 @@ IMGUR_DELETE_URL = 'https://api.imgur.com/3/image/'
 
 
 def upload_image(stream):
+    """Upload an image to Imgur.
+
+    Args:
+        stream: image stream
+    """
 
     data = {
         'image': b64encode(stream.read()),
@@ -21,6 +27,12 @@ def upload_image(stream):
 
 
 def delete_image(deletehash):
+    """Delete an image on Imgur by its deletehash.
+
+    Args:
+        deletehash: image's deletehash
+    """
+    
     headers = {'Authorization': 'Client-ID ' + ClIENT_ID}
     r = requests.delete(IMGUR_DELETE_URL + deletehash, headers=headers)
     print r.json()

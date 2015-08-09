@@ -4,33 +4,17 @@ This is a web application that provides a list of items within a variety of cate
 
 ## Usage
 
-- Install virtual virtualenv:
+- Install [virtualenv](https://virtualenv.pypa.io/en/latest/): `pip install virtualenv`.
 
-- Create a virtual environment:
+- Activate the Python virtual environment: `source venv/bin/activate`.
 
-- run:
+- Install all required modules: `pip install -r requirements.txt`.
 
+- Run the web server: `python manage.py runserver`.
 
-### What's included
-
-```
-item-catalog/
-│
-├── app
-│
-├── migrations
-│
-├── venv
-│
-├── manage.py
-│
-├── config.py
-│
-├── catelog.db
-│
-└── client_secrets.json
+- Open http://localhost:5000/ to check out the item catalog website.
 
 
+## License
 
-
-```
+Code released under the MIT license.

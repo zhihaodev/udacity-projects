@@ -1,23 +1,6 @@
 {% extends "base.html" %}
 
-
-{% block styles %}
-
-{{ super() }}
-<style type="text/css">
-  #signinButton {
-    text-align: center;
-    margin-top: 200px;
-  }
-</style>
-
-{% endblock %}
-
 {% block page_content %}
-<!-- <div class="page-header">
-  <h3>Login In</h3>
-</div> -->
-
 <div id="signinButton">
   <span class="g-signin"
       data-scope="https://www.googleapis.com/auth/userinfo.email"
@@ -30,10 +13,6 @@
     </span>
 </div>
 <div id="result"></div>
-
-
-
-
 {% endblock %}
 
 

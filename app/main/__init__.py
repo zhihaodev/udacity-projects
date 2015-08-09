@@ -1,3 +1,5 @@
+"""Blueprint for application's main functionality."""
+
 from flask import Blueprint
 
 main = Blueprint('main', __name__)

@@ -1,3 +1,5 @@
+"""ORM models"""
+
 from flask import url_for
 from . import db
 from datetime import datetime
@@ -7,20 +9,27 @@ from flask.ext.login import UserMixin
 
 @lm.user_loader
 def load_user(id):
+    """Callback function required by Flask_Login."""
+
     return User.query.get(int(id))
 
 
 class Category(db.Model):
+
+    """Category model"""
+
     __tablename__ = 'categories'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True, unique=True, nullable=False)
     items = db.relationship(
-        'Item', backref='category', lazy='dynamic', cascade='all, delete-orphan')
+        'Item', backref='category', lazy='dynamic',
+        cascade='all, delete-orphan')
 
     def to_json(self):
         return {
             'name': self.name,
-            'items': url_for('api.get_category_items', id=self.id, _external=True)
+            'items': url_for('api.get_category_items',
+                             id=self.id, _external=True)
         }
 
     def __repr__(self):
@@ -28,6 +37,9 @@ class Category(db.Model):
 
 
 class Item(db.Model):
+
+    """Item model"""
+
     __tablename__ = 'items'
     id = db.Column(db.Integer, primary_key=True)
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))

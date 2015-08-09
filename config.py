@@ -13,7 +13,5 @@ CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
 ME_INFO_URL = 'https://www.googleapis.com/userinfo/v2/me'
 TOKEN_INFO_URL_PREFIX = 'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token='
+DISCONNECTION_URL_PREFIX = 'https://accounts.google.com/o/oauth2/revoke?token='
 UPLOADED_IMAGES_DEST = 'uploads/'
-IMGUR_CLIENT_ID = 'fe5387a2e465ae6'
-IMGUR_UPLOAD_URL = 'https://api.imgur.com/3/image'
-IMGUR_DELETE_URL = 'https://api.imgur.com/3/image/'

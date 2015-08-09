@@ -1,22 +1,18 @@
+"""This app module is where the whole application lives. """
+
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.login import LoginManager
 from flask.ext.bootstrap import Bootstrap
-
 from flaskext.uploads import configure_uploads, UploadSet, IMAGES
-
-
 from sqlalchemy import event
 from .listeners import receive_before_delete
-
 
 db = SQLAlchemy()
 lm = LoginManager()
 bootstrap = Bootstrap()
 lm.login_view = 'auth.login'
-
 images = UploadSet('images', IMAGES)
-
 
 from .models import Item
 

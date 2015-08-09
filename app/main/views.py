@@ -1,17 +1,22 @@
-from flask import abort, render_template, flash, redirect, url_for, jsonify, request, current_app
+"""View functions for application's main functionality."""
+
+import requests
+from base64 import b64encode
+from werkzeug import secure_filename
+from flask import abort, render_template, flash, redirect, url_for,\
+    jsonify, request, current_app
+from flask.ext.login import login_required
 from . import main
+from .forms import AddOrEditItemForm, AddOrEditCategoryForm, DeleteForm
 from .. import db
 from ..models import Category, Item
-from flask.ext.login import login_required
-from .forms import AddOrEditItemForm, AddOrEditCategoryForm, DeleteForm
-from werkzeug import secure_filename
-from base64 import b64encode
 from ..helpers import upload_image, delete_image
-import requests
 
 
 @main.route('/')
 def index():
+    """Render index page."""
+
     categories = Category.query.order_by(Category.name).all()
     return render_template('index.html', categories=categories)
 
@@ -19,6 +24,8 @@ def index():
 @main.route('/add_category', methods=['GET', 'POST'])
 @login_required
 def add_category():
+    """Render page for adding category."""
+
     form = AddOrEditCategoryForm()
     if form.validate_on_submit():
         new_category = Category(name=form.name.data)
@@ -28,7 +35,8 @@ def add_category():
         except:
             flash(
                 ("Failed to add category \"%s\"."
-                 " Make sure that the category name is unique.") % new_category.name)
+                 " Make sure that the category name is unique.")
+                % new_category.name)
         else:
             flash("A new category \"%s\" has been added." % new_category.name)
         finally:
@@ -39,23 +47,21 @@ def add_category():
 @main.route('/add_item', methods=['GET', 'POST'])
 @login_required
 def add_item():
+    """Render page for adding item."""
+
     form = AddOrEditItemForm(Category.query.order_by(Category.name).all())
     img_upload_name = None
     if form.validate_on_submit():
-
         img_upload_name = secure_filename(form.img_upload.data.filename)
         img_deletehash = None
         img_url = None
 
+        # Upload image to Imgur if FileField is specified
         if img_upload_name != '':
-
             img_url, img_deletehash = upload_image(form.img_upload.data)
-            print "img_url: " + img_url
-            print "img_deletehash: " + img_deletehash
             if img_url is None or img_deletehash is None:
                 flash("Failed to upload image.")
                 return redirect(url_for('.index'))
-
         elif form.img_url.data != '':
             img_url = form.img_url.data
 
@@ -75,6 +81,7 @@ def add_item():
         finally:
             return redirect(url_for('.index'))
 
+    # Set SelectField's default value
     category_name = request.args.get('category_name')
     if category_name is not None:
         default_category = Category.query.filter_by(name=category_name).first()
@@ -83,15 +90,16 @@ def add_item():
             return redirect(url_for('.index'))
         form.category.data = default_category.id
 
-    return render_template('add_or_edit.html', form=form, filename=img_upload_name)
+    return render_template('add_or_edit.html',
+                           form=form, filename=img_upload_name)
 
 
 @main.route('/categories/<category_name>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_category(category_name):
-    category = Category.query.filter_by(name=category_name).first()
-    if category is None:
-        abort(404)
+    """Render page for editing category."""
+
+    category = Category.query.filter_by(name=category_name).first_or_404()
     form = AddOrEditCategoryForm()
     if form.validate_on_submit():
         category.name = form.name.data
@@ -100,7 +108,8 @@ def edit_category(category_name):
         except:
             flash(
                 ("Failed to edit category \"%s\"."
-                 " Make sure that the category name is unique.") % category.name)
+                 " Make sure that the category name is unique.")
+                % category.name)
         else:
             flash("Category \"%s\" has been edited." % category.name)
         finally:
@@ -112,23 +121,23 @@ def edit_category(category_name):
 @main.route('/items/<item_name>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_item(item_name):
-    item = Item.query.filter_by(name=item_name).first()
-    if item is None:
-        abort(404)
+    """Render page for editing item."""
+
+    item = Item.query.filter_by(name=item_name).first_or_404()
     form = AddOrEditItemForm(Category.query.order_by(Category.name).all())
     if form.validate_on_submit():
-        # item.name = form.name.data
-        # item.description = form.description.data
-        # item.category = Category.query.get(form.category.data)
 
         img_upload_name = secure_filename(form.img_upload.data.filename)
         img_deletehash = None
         img_url = None
 
-        if item.img_deletehash is not None and not delete_image(item.img_deletehash):
+        # Delete uploaded image on Imgur
+        if item.img_deletehash is not None \
+                and not delete_image(item.img_deletehash):
             flash("Failed to edit item \"%s\"." % item.name)
             return redirect(url_for('.index'))
 
+        # Upload new image on Imgur
         if img_upload_name != '':
             img_url, img_deletehash = upload_image(form.img_upload.data)
             print "img_url: " + img_url
@@ -168,9 +177,9 @@ def edit_item(item_name):
 @main.route('/categories/<category_name>/delete', methods=['GET', 'POST'])
 @login_required
 def delete_category(category_name):
-    category = Category.query.filter_by(name=category_name).first()
-    if category is None:
-        abort(404)
+    """Render page for deleting category."""
+
+    category = Category.query.filter_by(name=category_name).first_or_404()
     form = DeleteForm()
     if form.validate_on_submit():
         try:
@@ -188,9 +197,9 @@ def delete_category(category_name):
 @main.route('/items/<item_name>/delete', methods=['GET', 'POST'])
 @login_required
 def delete_item(item_name):
-    item = Item.query.filter_by(name=item_name).first()
-    if item is None:
-        abort(404)
+    """Render page for deleting item."""
+
+    item = Item.query.filter_by(name=item_name).first_or_404()
     form = DeleteForm()
     if form.validate_on_submit():
         try:
@@ -203,11 +212,3 @@ def delete_item(item_name):
         finally:
             return redirect(url_for('.index'))
     return render_template('delete.html', form=form, name=item_name)
-
-
-@main.route('/<category_name>')
-def list_items(category_name):
-    category = Category.query.filter_by(name=category_name).first()
-    if category is None:
-        abort(404)
-    return jsonify({'items': [item.to_json() for item in category.items]})

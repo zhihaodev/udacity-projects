@@ -2,48 +2,17 @@
 
 {% block styles %}
 {{ super() }}
-
 <style type="text/css">
   {% if not current_user.is_authenticated() %}
-  .add_btn {
+  .add_btn, .item_ops {
     display: none;
   }
   {% endif %}
-
-  .panel > .panel-heading {
-     background-color: #DCF3D6;
-  }
-
-  .panel-body > .item_ops {
-    text-align: right;
-    margin-top: 10px;
-    margin-bottom: 0px;
-  }
-
-  .panel-body > .item_img {
-    display: none;
-    text-align: center;
-    margin-bottom: 10px;
-  }
-
-  .item_img > img {
-    width: 300px;
-  }
-
-
-  .category_ops {
-    text-align: right;
-    margin-top: 5px;
-    margin-bottom: 10px;
-    display: none;
-  }
 </style>
-
 {% endblock %}
 
 
 {% block page_content %}
-
 <div class="col-md-4" id="categories">
   <div class="panel">
     <div class="list-group">
@@ -73,44 +42,13 @@
 
 <div class="col-md-8" id="items">
 
-
   <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
-  <!--   <div class="panel panel-default">
-      <div class="panel-heading" role="tab" id="headingOne">
-        <h4 class="panel-title">
-          <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne" >
-            Collapsible Group Item #1
-          </a>
-        </h4>
-      </div>
-      <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
-        <div class="panel-body">
-
-          <div class="item_img">
-            <img src='http://flask.pocoo.org/docs/0.10/_static/flask.png'  alt='image' />
-          </div>
-
-          Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
-
-
-          <div class='item_ops'>
-            <a href="#" class="btn btn-info btn-xs" onclick="showImage()">Info</a>
-            <a href="#" class="btn btn-warning btn-xs">Edit</a>
-            <a href="#" class="btn btn-danger btn-xs">Delete</a>
-          </div>
-          
-        </div>
-      </div>
-    </div> -->
-
   </div>
 
-
 <div class="add_btn"></div>
-
 </div>
-
 {% endblock %}
+
 
 {% block scripts %}
 {{ super() }}
@@ -131,14 +69,16 @@
     $(this).siblings().removeClass("active");
     $(this).addClass("active");
     
-    $.ajax('/' + name, {
+    console.log('$$$$$$',name);
+    $.ajax('/api/categories/by_name/' + name + '/items/', {
       data: name,
       dataType: 'json'
     }).done(function (data) {
-      console.log(data);
+      // console.log(data);
+      console.log("@@@")
       items = data.items;
-      console.log(items);
-      var i;
+      // console.log(items);
+      
       $("#items .list-group").empty();
 
       if (items.length == 0) {
@@ -154,8 +94,9 @@
 
         var i;
         for (i = 0; i < items.length; i++) {
-          console.log(items[i]);
-          groupItem = "<div class='panel panel-default'>\
+          console.log("!!!!!!!!!!", i, items[i], items.length);
+          groupItem = 
+            "<div class='panel panel-default'>\
               <div class='panel-heading' role='tab' id='heading_" + items[i].name + "'>\
                 <h4 class='panel-title'>\
                   <a class='collapsed' role='button' data-toggle='collapse' data-parent='#accordion'\
@@ -168,15 +109,14 @@
               aria-labelledby='heading_"+ items[i].name + "'>\
                 <div class='panel-body'>\
                   <div class='item_img'>\
-                    <img src='" + items[i].img_url + "'  alt='image' />\
                   </div>"
                   + items[i].description +
                   "<div class='item_ops'>\
                     <a href='#' class='btn btn-info btn-xs' onclick='showImage()'>Pic</a>\
                     <a href='/items/" + items[i].name + "/edit' class='btn btn-warning btn-xs'>Edit</a>\
                     <a href='/items/" + items[i].name + "/delete' class='btn btn-danger btn-xs'>Delete</a>\
-                  </div>"
-                "</div>\
+                  </div>\
+                </div>\
               </div>\
             </div>";
 
@@ -184,15 +124,15 @@
           $('.panel-group').append(groupItem);
 
           if (items[i].img_url == null) {
-            $('#collapse_' + items[i].name + ' .item_img').empty();
             $('#collapse_' + items[i].name + ' .btn-info').remove();
+          } else {
+            console.log('xxxxxxxxxx');
+            $('#collapse_' + items[i].name + ' .item_img').html("<img src="+ items[i].img_url + ">");
           }
-
-
+          
         }
-       
-
       }
+      console.log('end!!!!');
     }).fail(function () {
       $("#items .error_msg").html(
         "<div class='alert alert-warning fade in'>\
@@ -200,17 +140,11 @@
           <span aria-hidden='true' data-dismiss='alert'>&times;</button>\
           Connection failed.</div>"
       );
-
     });
-    
   });
-
 
   function showImage() {
     $("#items .item_img").fadeToggle();
   }
-
-
 </script>
-
 {% endblock %}
