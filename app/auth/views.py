@@ -11,6 +11,7 @@ import json
 import requests
 import random
 import string
+from ..exceptions import InvalidUsageException
 
 
 @auth.route('/login')
@@ -22,7 +23,7 @@ def login():
     session['state'] = state
 
     next = request.args.get('next')
-    print next, 1111
+
     if next is not None:
         session['next'] = next
 
@@ -33,10 +34,7 @@ def login():
 def gconnect():
     # Validate state token
     if request.args.get('state') != session['state']:
-        response = make_response(json.dumps('Invalid state parameter.'), 401)
-        response.headers['Content-Type'] = 'application/json'
-        return response
-
+        abort(401)
     # Obtain authorization code
     code = request.data
     try:
@@ -45,10 +43,7 @@ def gconnect():
         oauth_flow.redirect_uri = 'postmessage'
         credentials = oauth_flow.step2_exchange(code)
     except FlowExchangeError:
-        response = make_response(
-            json.dumps('Failed to upgrade the authorization code.'), 401)
-        response.headers['Content-Type'] = 'application/json'
-        return response
+        abort(401)
 
     # Check that the access token is valid.
     access_token = credentials.access_token
@@ -59,35 +54,18 @@ def gconnect():
 
     # If there was an error in the access token info, abort.
     if result.get('error') is not None:
-        response = make_response(json.dumps(result.get('error')), 500)
-        response.headers['Content-Type'] = 'application/json'
-        return response
+        abort(500)
 
     # Verify that the access token is used for the intended user.
     gplus_id = credentials.id_token['sub']
     if result['user_id'] != gplus_id:
-        response = make_response(
-            json.dumps("Token's user ID doesn't match given user ID."), 401)
-        response.headers['Content-Type'] = 'application/json'
-        return response
+        abort(401)
+
     # Verify that the access token is valid for this app.
     if result['issued_to'] != current_app.config['CLIENT_ID']:
-        response = make_response(
-            json.dumps("Token's client ID does not match app's."), 401)
-        response.headers['Content-Type'] = 'application/json'
-        return response
-    # stored_access_token = session.get('access_token')
-    # stored_gplus_id = session.get('gplus_id')
-    # if stored_access_token is not None and gplus_id == stored_gplus_id:
-    #     response = make_response(
-    #         json.dumps('Current user is already connected.'), 200)
-    #     response.headers['Content-Type'] = 'application/json'
-    #     return response
+        abort(401)
 
-    # Store the access token in the session for later use.
-    # session['access_token'] = access_token
-    # session['gplus_id'] = gplus_id
-    response = make_response(json.dumps('Successfully connected user.', 200))
+    session['access_token'] = access_token
 
     # Request user info
     params = {'access_token': access_token, 'alt': 'json'}
@@ -130,9 +108,27 @@ def gconnect():
 @auth.route('/logout')
 @login_required
 def logout():
-    logout_user()
-    flash('Log out successful.')
-    return redirect(url_for('main.index'))
+
+    raise InvalidUsageException('TTTTestssss', 401)
+    print "##########"
+
+    if session['access_token'] is None:
+        abort(401)
+
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % session[
+        'access_token']
+    h = httplib2.Http()
+    result = h.request(url, 'GET')[0]
+
+    if result['status'] == '200':
+        del session['access_token']
+        logout_user()
+        flash('Log out successful.')
+        return redirect(url_for('main.index'))
+
+    else:
+        # For whatever reason, the given token was invalid.
+        abort(400)
 
 
 def next_is_valid(next):
