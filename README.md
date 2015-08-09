@@ -17,4 +17,4 @@ This is a web application that provides a list of items within a variety of cate
 
 ## License
 
-Code released under the MIT license.
+Code released under [the MIT license](https://github.com/zhihaodev/item-catalog/blob/master/LICENSE).
