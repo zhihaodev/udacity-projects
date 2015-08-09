@@ -6,7 +6,9 @@ This is a web application that provides a list of items within a variety of cate
 
 - Install [virtualenv](https://virtualenv.pypa.io/en/latest/): `pip install virtualenv`.
 
-- Activate the Python virtual environment: `source venv/bin/activate`.
+- Create and activate the Python virtual environment: 
+`virtualenv venv`
+`source venv/bin/activate`.
 
 - Install all required modules: `pip install -r requirements.txt`.
 
