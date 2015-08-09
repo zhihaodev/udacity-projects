@@ -27,6 +27,7 @@ class Category(db.Model):
 
     def to_json(self):
         return {
+            'id': self.id,
             'name': self.name,
             'items': url_for('api.get_category_items',
                              id=self.id, _external=True)
@@ -51,6 +52,7 @@ class Item(db.Model):
 
     def to_json(self):
         return {
+            'id': self.id,
             'name': self.name,
             'category': url_for('api.get_category',
                                 id=self.category_id, _external=True),
