@@ -69,15 +69,11 @@
     $(this).siblings().removeClass("active");
     $(this).addClass("active");
     
-    console.log('$$$$$$',name);
     $.ajax('/api/categories/by_name/' + name + '/items/', {
       data: name,
       dataType: 'json'
     }).done(function (data) {
-      // console.log(data);
-      console.log("@@@")
       items = data.items;
-      // console.log(items);
       
       $("#items .list-group").empty();
 
@@ -94,7 +90,6 @@
 
         var i;
         for (i = 0; i < items.length; i++) {
-          console.log("!!!!!!!!!!", i, items[i], items.length);
           groupItem = 
             "<div class='panel panel-default'>\
               <div class='panel-heading' role='tab' id='heading_" + items[i].name + "'>\
@@ -126,13 +121,11 @@
           if (items[i].img_url == null) {
             $('#collapse_' + items[i].name + ' .btn-info').remove();
           } else {
-            console.log('xxxxxxxxxx');
             $('#collapse_' + items[i].name + ' .item_img').html("<img src="+ items[i].img_url + ">");
           }
           
         }
       }
-      console.log('end!!!!');
     }).fail(function () {
       $("#items .error_msg").html(
         "<div class='alert alert-warning fade in'>\
