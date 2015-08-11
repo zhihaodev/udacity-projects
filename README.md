@@ -4,6 +4,10 @@ This is a web application that provides a list of items within a variety of cate
 
 ## Usage
 
+Check out [http://enigmatic-ravine-5039.herokuapp.com](http://enigmatic-ravine-5039.herokuapp.com).
+
+To run it locally:
+
 - Install [virtualenv](https://virtualenv.pypa.io/en/latest/): `pip install virtualenv`.
 
 - Create and activate the Python virtual environment: 
@@ -14,7 +18,7 @@ This is a web application that provides a list of items within a variety of cate
 
 - Run the web server: `python manage.py runserver`.
 
-- Open http://localhost:5000/ to check out the item catalog website.
+- Open [http://localhost:5000/](http://localhost:5000/) to check out the item catalog website.
 
 
 ## License
