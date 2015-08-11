@@ -20,7 +20,7 @@ def upload_image(stream):
     }
     headers = {'Authorization': 'Client-ID ' + ClIENT_ID}
     r = requests.post(IMGUR_UPLOAD_URL, data=data, headers=headers)
-    # print r.json()
+    print r
     if r.status_code != requests.codes.ok:
         return None, None
     return r.json()['data']['link'], r.json()['data']['deletehash']
@@ -35,5 +35,5 @@ def delete_image(deletehash):
     
     headers = {'Authorization': 'Client-ID ' + ClIENT_ID}
     r = requests.delete(IMGUR_DELETE_URL + deletehash, headers=headers)
-    # print r.json()
+    print r.json()
     return r.status_code == requests.codes.ok

@@ -5,7 +5,7 @@ from base64 import b64encode
 from werkzeug import secure_filename
 from flask import abort, render_template, flash, redirect, url_for,\
     jsonify, request, current_app
-from flask.ext.login import login_required
+from flask.ext.login import login_required, current_user
 from . import main
 from .forms import AddOrEditItemForm, AddOrEditCategoryForm, DeleteForm
 from .. import db
@@ -28,7 +28,7 @@ def add_category():
 
     form = AddOrEditCategoryForm()
     if form.validate_on_submit():
-        new_category = Category(name=form.name.data)
+        new_category = Category(name=form.name.data, owner=current_user._get_current_object())
         try:
             db.session.add(new_category)
             db.session.commit()
@@ -67,7 +67,8 @@ def add_item():
 
         new_item = Item(name=form.name.data, description=form.description.data,
                         category=Category.query.get(form.category.data),
-                        img_url=img_url, img_deletehash=img_deletehash)
+                        img_url=img_url, img_deletehash=img_deletehash,
+                        owner=current_user._get_current_object())
 
         try:
             db.session.add(new_item)
@@ -100,6 +101,12 @@ def edit_category(category_name):
     """Render page for editing category."""
 
     category = Category.query.filter_by(name=category_name).first_or_404()
+
+    if category.owner != current_user:
+        flash("Failed to edit category %s since you are not the owner." %
+              category.name)
+        return redirect(url_for('.index'))
+
     form = AddOrEditCategoryForm()
     if form.validate_on_submit():
         category.name = form.name.data
@@ -124,6 +131,12 @@ def edit_item(item_name):
     """Render page for editing item."""
 
     item = Item.query.filter_by(name=item_name).first_or_404()
+
+    if item.owner != current_user:
+        flash("Failed to edit item %s since you are not the owner." %
+              item.name)
+        return redirect(url_for('.index'))
+
     form = AddOrEditItemForm(Category.query.order_by(Category.name).all())
     if form.validate_on_submit():
 
@@ -180,6 +193,11 @@ def delete_category(category_name):
     """Render page for deleting category."""
 
     category = Category.query.filter_by(name=category_name).first_or_404()
+    if category.owner != current_user:
+        flash("Failed to delete category %s since you are not the owner." %
+              category.name)
+        return redirect(url_for('.index'))
+
     form = DeleteForm()
     if form.validate_on_submit():
         try:
@@ -200,6 +218,11 @@ def delete_item(item_name):
     """Render page for deleting item."""
 
     item = Item.query.filter_by(name=item_name).first_or_404()
+    if item.owner != current_user:
+        flash("Failed to delete item %s since you are not the owner." %
+              item.name)
+        return redirect(url_for('.index'))
+
     form = DeleteForm()
     if form.validate_on_submit():
         try:

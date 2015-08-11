@@ -4,7 +4,7 @@
 {{ super() }}
 <style type="text/css">
   {% if not current_user.is_authenticated() %}
-  .add_btn, .item_ops {
+  .add_btn, .item_ops > .btn-warning, .item_ops > .btn-danger {
     display: none;
   }
   {% endif %}
@@ -23,20 +23,20 @@
         <span class="badge">{{ category.items.count() }}</span>
         <span class="category_name">{{ category.name }}</span>
       </a>
-
+      {% if current_user == category.owner %}
       <div class="category_ops" style="display:none;">
         <a href="{{ url_for('main.edit_category', category_name=category.name) }}" class="btn btn-warning btn-xs">Edit</a>
         <a href="{{ url_for('main.delete_category', category_name=category.name) }}" class="btn btn-danger btn-xs">Delete</a>
       </div>
+      {% endif %}
 
       {% endfor %}
-
     </div>
   </div>
-
+  
   <div class="add_btn">
     <a href="{{ url_for('main.add_category') }}" class="btn btn-primary">Add Category</a>
-  </div>
+  </div> 
   
 </div>
 
@@ -87,7 +87,7 @@
             $(".error_msg").alert('close');
         });
       } else {
-
+        console.log("@@@@@@@@@@")
         var i;
         for (i = 0; i < items.length; i++) {
           groupItem = 
@@ -108,15 +108,22 @@
                   + items[i].description +
                   "<div class='item_ops'>\
                     <a href='#' class='btn btn-info btn-xs' onclick='showImage()'>Pic</a>\
-                    <a href='/items/" + items[i].name + "/edit' class='btn btn-warning btn-xs'>Edit</a>\
-                    <a href='/items/" + items[i].name + "/delete' class='btn btn-danger btn-xs'>Delete</a>\
                   </div>\
                 </div>\
               </div>\
             </div>";
 
-
           $('.panel-group').append(groupItem);
+          
+
+          // a = '{{ current_user.id }}';
+
+          if (items[i].owner_id == "{{ current_user.id }}") {
+            $('#collapse_' + items[i].id + ' .item_ops').append(
+              "<a href='/items/" + items[i].name + "/edit' class='btn btn-warning btn-xs'>Edit</a>\
+               <a href='/items/" + items[i].name + "/delete' class='btn btn-danger btn-xs'>Delete</a>"
+            );
+          }
 
           if (items[i].img_url == null) {
             $('#collapse_' + items[i].id + ' .btn-info').remove();
