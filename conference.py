@@ -38,6 +38,7 @@ from models import ConferenceQueryForms
 from models import TeeShirtSize
 from models import Session
 from models import SessionForm
+from models import SessionForms
 
 from settings import WEB_CLIENT_ID
 from settings import ANDROID_CLIENT_ID
@@ -114,6 +115,22 @@ class ConferenceApi(remote.Service):
             setattr(cf, 'organizerDisplayName', displayName)
         cf.check_initialized()
         return cf
+
+    def _copySessionToForm(self, sess):
+        """Copy relevant fields from Session to SessionForm"""
+
+        sf = SessionForm()
+        for field in sf.all_fields():
+            if hasattr(sess, field.name):
+                # convert Date to date string; just copy others
+                if field.name == "date" or field.name == "startTime":
+                    setattr(sf, field.name, str(getattr(sess, field.name)))
+                else:
+                    setattr(sf, field.name, getattr(sess, field.name))
+            elif field.name == "websafeKey":
+                setattr(sf, field.name, sess.key.urlsafe())
+        sf.check_initialized()
+        return sf
 
 
     def _createConferenceObject(self, request):
@@ -198,9 +215,10 @@ class ConferenceApi(remote.Service):
 
         # generate Profile Key based on user ID and Conference
         # ID based on Profile key get Conference key from ID
-        p_key = data['conferenceKey']
-        c_id = Session.allocate_ids(size=1, parent=p_key)[0]
-        s_key = ndb.Key(Session, c_id, parent=p_key)
+        p_key = ndb.Key(urlsafe=data['conferenceKey'])
+        print "p_key :", p_key
+        s_id = Session.allocate_ids(size=1, parent=p_key)[0]
+        s_key = ndb.Key(Session, s_id, parent=p_key)
         data['key'] = s_key
 
         # create Session, send email to organizer confirming
@@ -281,7 +299,6 @@ class ConferenceApi(remote.Service):
     def getConference(self, request):
         """Return requested conference (by websafeConferenceKey)."""
         # get Conference object from request; bail if not found
-        print '###: ', request.websafeConferenceKey
         conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
         if not conf:
             raise endpoints.NotFoundException(
@@ -308,6 +325,23 @@ class ConferenceApi(remote.Service):
         # return set of ConferenceForm objects per Conference
         return ConferenceForms(
             items=[self._copyConferenceToForm(conf, getattr(prof, 'displayName')) for conf in confs]
+        )
+
+    @endpoints.method(CONF_GET_REQUEST, SessionForms,
+            path='getConferenceSessions',
+            http_method='POST', name='getConferenceSessions')
+    def getConferenceSessions(self, request):
+        """Return Sessions of a given conference."""
+        conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
+        print '@@: ',conf
+        if not conf:
+            raise endpoints.NotFoundException(
+                'No conference found with key: %s' % request.websafeConferenceKey)
+
+        sessions = Session.query(ancestor=conf.key)
+        print "@@ :", sessions
+        return SessionForms(
+            items=[self._copySessionToForm(sess) for sess in sessions]
         )
 
 
