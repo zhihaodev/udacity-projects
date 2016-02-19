@@ -260,7 +260,7 @@ class ConferenceApi(remote.Service):
         # update existing conference
         conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
         # check that conference exists
-        if not conf:
+        if not conf or conf.__class__.__name__ != "Conference":
             raise endpoints.NotFoundException(
                 'No conference found with key: %s' % request.websafeConferenceKey)
 
@@ -316,7 +316,7 @@ class ConferenceApi(remote.Service):
         """Return requested conference (by websafeConferenceKey)."""
         # get Conference object from request; bail if not found
         conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
-        if not conf:
+        if not conf or conf.__class__.__name__ != "Conference":
             raise endpoints.NotFoundException(
                 'No conference found with key: %s' % request.websafeConferenceKey)
         prof = conf.key.parent().get()
@@ -349,7 +349,7 @@ class ConferenceApi(remote.Service):
     def getConferenceSessions(self, request):
         """Return Sessions of a given conference."""
         conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
-        if not conf:
+        if not conf or conf.__class__.__name__ != "conference":
             raise endpoints.NotFoundException(
                 'No conference found with key: %s' % request.websafeConferenceKey)
 
@@ -588,7 +588,7 @@ class ConferenceApi(remote.Service):
         # get conference; check that it exists
         wsck = request.websafeConferenceKey
         conf = ndb.Key(urlsafe=wsck).get()
-        if not conf:
+        if not conf or conf.__class__.__name__ != "Conference":
             raise endpoints.NotFoundException(
                 'No conference found with key: %s' % wsck)
 
@@ -634,10 +634,10 @@ class ConferenceApi(remote.Service):
 
         wssk = request.websafeSessionKey
         sess = ndb.Key(urlsafe=wssk).get()
-        #
-        if not sess:
+        print dir(sess)
+        if not sess or sess.__class__.__name__ != "Session":
             raise endpoints.NotFoundException(
-                'No conference found with key: %s' % wssk)
+                'No session found with key: %s' % wssk)
 
         # register
         if reg:
