@@ -145,7 +145,6 @@ class SessionQueryByTypeForm(messages.Message):
 
     typeOfSession = messages.StringField(1)
 
-
 class SessionQueryBySpeakerForm(messages.Message):
     """SessionQueryByForm -- Session query by speaker inbound form message"""
 

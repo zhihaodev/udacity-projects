@@ -95,9 +95,14 @@ SESS_GET_REQUEST = endpoints.ResourceContainer(
     websafeSessionKey=messages.StringField(1),
 )
 
-SESS_POST_REQUEST = endpoints.ResourceContainer(
+SESS_POST_REQUEST1 = endpoints.ResourceContainer(
     SessionForm,
     websafeSessionKey=messages.StringField(1),
+)
+
+SESS_POST_REQUEST2 = endpoints.ResourceContainer(
+    SessionQueryByTypeForm,
+    websafeConferenceKey=messages.StringField(1),
 )
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -427,9 +432,11 @@ class ConferenceApi(remote.Service):
                 conferences]
         )
 
-    @endpoints.method(SessionQueryByTypeForm, SessionForms,
+
+
+    @endpoints.method(SESS_POST_REQUEST2, SessionForms,
             path='getConferenceSessionsByType/{websafeConferenceKey}',
-            http_method='POST',
+            http_method='PUT',
             name='getConferenceSessionsByType')
     def getConferenceSessionsByType(self, request):
         """Query for sessions by type."""
