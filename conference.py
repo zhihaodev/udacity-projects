@@ -90,6 +90,16 @@ CONF_POST_REQUEST = endpoints.ResourceContainer(
     websafeConferenceKey=messages.StringField(1),
 )
 
+SESS_GET_REQUEST = endpoints.ResourceContainer(
+    message_types.VoidMessage,
+    websafeSessionKey=messages.StringField(1),
+)
+
+SESS_POST_REQUEST = endpoints.ResourceContainer(
+    SessionForm,
+    websafeSessionKey=messages.StringField(1),
+)
+
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -330,7 +340,7 @@ class ConferenceApi(remote.Service):
         )
 
     @endpoints.method(CONF_GET_REQUEST, SessionForms,
-            path='getConferenceSessions',
+                      path='getConferenceSessions/{websafeConferenceKey}',
             http_method='POST', name='getConferenceSessions')
     def getConferenceSessions(self, request):
         """Return Sessions of a given conference."""
@@ -418,7 +428,7 @@ class ConferenceApi(remote.Service):
         )
 
     @endpoints.method(SessionQueryByTypeForm, SessionForms,
-            path='getConferenceSessionsByType',
+            path='getConferenceSessionsByType/{websafeConferenceKey}',
             http_method='POST',
             name='getConferenceSessionsByType')
     def getConferenceSessionsByType(self, request):
@@ -610,6 +620,43 @@ class ConferenceApi(remote.Service):
         conf.put()
         return BooleanMessage(data=retval)
 
+    @ndb.transactional(xg=True)
+    def _wishlistRegistration(self, request, reg=True):
+        """Register or unregister session for user's wishlist."""
+        retval = None
+        prof = self._getProfileFromUser() # get user Profile
+
+        wssk = request.websafeSessionKey
+        sess = ndb.Key(urlsafe=wssk).get()
+        if not sess:
+            raise endpoints.NotFoundException(
+                'No conference found with key: %s' % wssk)
+
+        # register
+        if reg:
+            # check if user already registered otherwise add
+            if wssk in prof.sessionKeysToAttend:
+                raise ConflictException(
+                    "You have already added this session.")
+
+            prof.sessionKeysToAttend.append(wssk)
+            retval = True
+
+        # unregister
+        else:
+            # check if user already registered
+            if wssk in prof.sessionKeysToAttend:
+                prof.sessionKeysToAttend.remove(wssk)
+                retval = True
+            else:
+                retval = False
+
+        # write things back to the datastore & return
+        prof.put()
+
+        return BooleanMessage(data=retval)
+
+
 
     @endpoints.method(message_types.VoidMessage, ConferenceForms,
             path='conferences/attending',
@@ -641,6 +688,16 @@ class ConferenceApi(remote.Service):
     def registerForConference(self, request):
         """Register user for selected conference."""
         return self._conferenceRegistration(request)
+
+
+
+    @endpoints.method(SESS_GET_REQUEST, BooleanMessage,
+            path='session/{websafeSessionKey}',
+            http_method='POST', name='addSessionToWishlist')
+    def addSessionToWishlist(self, request):
+        """add the session to the user's wishlist."""
+
+        return self._wishlistRegistration(request)
 
 
     @endpoints.method(CONF_GET_REQUEST, BooleanMessage,
