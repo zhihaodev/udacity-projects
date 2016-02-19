@@ -39,6 +39,8 @@ from models import TeeShirtSize
 from models import Session
 from models import SessionForm
 from models import SessionForms
+from models import SessionQueryByTypeForm
+from models import SessionQueryBySpeakerForm
 
 from settings import WEB_CLIENT_ID
 from settings import ANDROID_CLIENT_ID
@@ -116,19 +118,19 @@ class ConferenceApi(remote.Service):
         cf.check_initialized()
         return cf
 
-    def _copySessionToForm(self, sess):
+    def _copySessionToForm(self, session):
         """Copy relevant fields from Session to SessionForm"""
 
         sf = SessionForm()
         for field in sf.all_fields():
-            if hasattr(sess, field.name):
+            if hasattr(session, field.name):
                 # convert Date to date string; just copy others
                 if field.name == "date" or field.name == "startTime":
-                    setattr(sf, field.name, str(getattr(sess, field.name)))
+                    setattr(sf, field.name, str(getattr(session, field.name)))
                 else:
-                    setattr(sf, field.name, getattr(sess, field.name))
+                    setattr(sf, field.name, getattr(session, field.name))
             elif field.name == "websafeKey":
-                setattr(sf, field.name, sess.key.urlsafe())
+                setattr(sf, field.name, session.key.urlsafe())
         sf.check_initialized()
         return sf
 
@@ -333,15 +335,13 @@ class ConferenceApi(remote.Service):
     def getConferenceSessions(self, request):
         """Return Sessions of a given conference."""
         conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
-        print '@@: ',conf
         if not conf:
             raise endpoints.NotFoundException(
                 'No conference found with key: %s' % request.websafeConferenceKey)
 
         sessions = Session.query(ancestor=conf.key)
-        print "@@ :", sessions
         return SessionForms(
-            items=[self._copySessionToForm(sess) for sess in sessions]
+            items=[self._copySessionToForm(session) for session in sessions]
         )
 
 
@@ -415,6 +415,36 @@ class ConferenceApi(remote.Service):
         return ConferenceForms(
                 items=[self._copyConferenceToForm(conf, names[conf.organizerUserId]) for conf in \
                 conferences]
+        )
+
+    @endpoints.method(SessionQueryByTypeForm, SessionForms,
+            path='getConferenceSessionsByType',
+            http_method='POST',
+            name='getConferenceSessionsByType')
+    def getConferenceSessionsByType(self, request):
+        """Query for sessions by type."""
+
+        conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
+        q = Session.query(ancestor=conf.key)
+        q = q.filter(Session.typeOfSession==request.typeOfSession)
+
+        return SessionForms(
+            items=[self._copySessionToForm(session) for session in q]
+        )
+
+    @endpoints.method(SessionQueryBySpeakerForm, SessionForms,
+            path='getConferenceSessionsBySpeaker',
+            http_method='POST',
+            name='getConferenceSessionsBySpeaker')
+    def getConferenceSessionsBySpeaker(self, request):
+        """Query for sessions by speaker."""
+
+
+        q = Session.query()
+        q = q.filter(Session.speaker==request.speaker)
+
+        return SessionForms(
+            items=[self._copySessionToForm(session) for session in q]
         )
 
 
