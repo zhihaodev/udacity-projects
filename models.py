@@ -153,3 +153,13 @@ class FeaturedSpeakerForm(messages.Message):
     """FeaturedSpeakerForm -- featured speaker inbound form message"""
 
     featuredSpeaker = messages.StringField(1)
+
+class SessionQueryByNameForm(messages.Message):
+    """SessionQueryByNameFor -- Session query by name inbound form message"""
+
+    name = messages.StringField(1)
+
+class SessionQueryByDateForm(messages.Message):
+    """SessionQueryByDateFor -- Session query by date inbound form message"""
+
+    date = messages.StringField(1)

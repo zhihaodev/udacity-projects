@@ -42,6 +42,8 @@ from models import SessionForms
 # from models import SessionQueryByTypeForm
 from models import SessionQueryBySpeakerForm
 from models import FeaturedSpeakerForm
+from models import SessionQueryByDateForm
+from models import SessionQueryByNameForm
 
 from settings import WEB_CLIENT_ID
 from settings import ANDROID_CLIENT_ID
@@ -462,7 +464,7 @@ class ConferenceApi(remote.Service):
             items=[self._copySessionToForm(session) for session in q]
         )
 
-    @endpoints.method(SessionForm, SessionForms,
+    @endpoints.method(SessionQueryByNameForm, SessionForms,
             path='sessionsByName',
             http_method='GET',
             name='getSessionsByName')
@@ -475,7 +477,7 @@ class ConferenceApi(remote.Service):
             items=[self._copySessionToForm(session) for session in q]
         )
 
-    @endpoints.method(SessionForm, SessionForms,
+    @endpoints.method(SessionQueryByDateForm, SessionForms,
             path='sessionsByDate',
             http_method='GET',
             name='getSessionsByDate')
@@ -759,7 +761,6 @@ class ConferenceApi(remote.Service):
     def registerForConference(self, request):
         """Register user for selected conference."""
         return self._conferenceRegistration(request)
-
 
 
     @endpoints.method(SESS_GET_REQUEST, BooleanMessage,
