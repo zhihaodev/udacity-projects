@@ -39,7 +39,7 @@ from models import TeeShirtSize
 from models import Session
 from models import SessionForm
 from models import SessionForms
-from models import SessionQueryByTypeForm
+# from models import SessionQueryByTypeForm
 from models import SessionQueryBySpeakerForm
 from models import FeaturedSpeakerForm
 
@@ -218,13 +218,6 @@ class ConferenceApi(remote.Service):
         data = {field.name: getattr(request, field.name) for field in request.all_fields()}
         del data['websafeKey']
 
-        # add default values for those missing (both data model & outbound Message)
-        # for df in DEFAULTS:
-        #     if data[df] in (None, []):
-        #         data[df] = DEFAULTS[df]
-        #         setattr(request, df, DEFAULTS[df])
-
-        # convert dates from strings to Date objects; set month based on start_date
         if data['date']:
             data['date'] = datetime.strptime(data['date'][:10], "%Y-%m-%d").date()
         if data['startTime']:
@@ -236,15 +229,11 @@ class ConferenceApi(remote.Service):
         data['key'] = s_key
         del data['websafeConferenceKey']
 
-        # create Session, send email to organizer confirming
-        # creation of Conference & return (modified) ConferenceForm
         Session(**data).put()
-        taskqueue.add(params={'email': user.email(),
-            'SessionInfo': repr(request)},
-            url='/tasks/send_confirmation_email'
-        )
+
         sess = s_key.get()
         sess.websafeConferenceKey = None
+        sess.websafeKey = None
         return self._copySessionToForm(sess)
 
 
@@ -299,8 +288,6 @@ class ConferenceApi(remote.Service):
     def createSession(self, request):
         """Create new session."""
 
-        # return self._createSessionObject(request)
-
         session = self._createSessionObject(request)
         conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
         if not conf or conf.__class__.__name__ != "Conference":
@@ -309,8 +296,6 @@ class ConferenceApi(remote.Service):
 
         sessions = Session.query(Session.speaker==session.speaker, ancestor=conf.key)
         if sessions.count(2) > 1:
-            # memcache.set(conf.name, session.speaker)
-
             taskqueue.add(params={'conferenceKey': conf.key.urlsafe(),
                                   'featuredSpeaker': session.speaker},
                           url='/tasks/set_featured_speaker')
@@ -336,7 +321,6 @@ class ConferenceApi(remote.Service):
             raise endpoints.NotFoundException(
                 'No conference found with key: %s' % request.websafeConferenceKey)
         prof = conf.key.parent().get()
-        # return ConferenceForm
         return self._copyConferenceToForm(conf, getattr(prof, 'displayName'))
 
 
@@ -763,10 +747,11 @@ class ConferenceApi(remote.Service):
         """Get list of sessions in user's wishlist."""
 
         prof = self._getProfileFromUser()
-        sess_keys = [ndb.Key(urlsafe=wssk) for wssk in prof.sessionKeysWishlist]
-        sessions = ndb.get_multi(sess_keys)
-
-        return SessionForms(items=[self._copySessionToForm(sess) for sess in sessions])
+        if prof.sessionKeysWishlist:
+            sess_keys = [ndb.Key(urlsafe=wssk) for wssk in prof.sessionKeysWishlist]
+            sessions = ndb.get_multi(sess_keys)
+            return SessionForms(items=[self._copySessionToForm(sess) for sess in sessions])
+        return SessionForms(items=None)
 
     @endpoints.method(CONF_GET_REQUEST, BooleanMessage,
             path='conference/{websafeConferenceKey}',

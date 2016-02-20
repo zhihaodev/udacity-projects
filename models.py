@@ -138,11 +138,11 @@ class SessionForms(messages.Message):
     items = messages.MessageField(SessionForm, 1, repeated=True)
 
 
-class SessionQueryByTypeForm(messages.Message):
-    """SessionQueryByForm -- Session query by type inbound form message"""
+# class SessionQueryByTypeForm(messages.Message):
+#     """SessionQueryByForm -- Session query by type inbound form message"""
 
-    typeOfSession = messages.StringField(1)
-    websafeConferenceKey = messages.StringField(2)
+#     typeOfSession = messages.StringField(1)
+
 
 class SessionQueryBySpeakerForm(messages.Message):
     """SessionQueryByForm -- Session query by speaker inbound form message"""
