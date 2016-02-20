@@ -441,27 +441,56 @@ class ConferenceApi(remote.Service):
         """Query for sessions by type."""
 
         conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
-        q = Session.query(ancestor=conf.key)
-        q = q.filter(Session.typeOfSession==request.typeOfSession)
+        q = Session.query(ancestor=conf.key). \
+            filter(Session.typeOfSession==request.typeOfSession)
 
         return SessionForms(
             items=[self._copySessionToForm(session) for session in q]
         )
 
-    @endpoints.method(SessionQueryBySpeakerForm, SessionForms,
+    @endpoints.method(SessionForm, SessionForms,
             path='sessionsBySpeaker',
             http_method='GET',
-            name='getConferenceSessionsBySpeaker')
-    def getConferenceSessionsBySpeaker(self, request):
+            name='getSessionsBySpeaker')
+    def getSessionsBySpeaker(self, request):
         """Query for sessions by speaker."""
 
 
-        q = Session.query()
-        q = q.filter(Session.speaker==request.speaker)
+        q = Session.query().filter(Session.speaker==request.speaker)
 
         return SessionForms(
             items=[self._copySessionToForm(session) for session in q]
         )
+
+    @endpoints.method(SessionForm, SessionForms,
+            path='sessionsByName',
+            http_method='GET',
+            name='getSessionsByName')
+    def getSessionsByName(self, request):
+        """Query for sessions by Name."""
+
+        q = Session.query().filter(Session.name==request.name)
+
+        return SessionForms(
+            items=[self._copySessionToForm(session) for session in q]
+        )
+
+    @endpoints.method(SessionForm, SessionForms,
+            path='sessionsByDate',
+            http_method='GET',
+            name='getSessionsByDate')
+    def getSessionsByDate(self, request):
+        """Query for sessions by Date."""
+
+        date = datetime.strptime(request.date, "%Y-%m-%d").date()
+        q = Session.query().filter(Session.date==date)
+
+        return SessionForms(
+            items=[self._copySessionToForm(session) for session in q]
+        )
+
+
+
 
 
 # - - - Profile objects - - - - - - - - - - - - - - - - - - -
