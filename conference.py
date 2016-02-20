@@ -227,7 +227,7 @@ class ConferenceApi(remote.Service):
         if data['date']:
             data['date'] = datetime.strptime(data['date'][:10], "%Y-%m-%d").date()
         if data['startTime']:
-            data['startTime'] = datetime.strptime(data['startTime'][:10], "%H").time()
+            data['startTime'] = datetime.strptime(data['startTime'][:2], "%H").time()
 
         p_key = ndb.Key(urlsafe=data['websafeConferenceKey'])
         s_id = Session.allocate_ids(size=1, parent=p_key)[0]
@@ -489,8 +489,21 @@ class ConferenceApi(remote.Service):
             items=[self._copySessionToForm(session) for session in q]
         )
 
+    @endpoints.method(message_types.VoidMessage, SessionForms,
+            path='sessionsYouLike',
+            http_method='GET',
+            name='getSessionYouLike')
+    def getSessionsYouLike(self, request):
+        """Query for sessions that you like. you don't like workshops
+        and you don't like sessions after 7 pm."""
 
-
+        startTime = datetime.strptime("19", "%H").time()
+        q = Session.query().filter(Session.typeOfSession<>"workshop").iter(projection=[Session.startTime])
+        keys = [session.key for session in q if session.startTime and session.startTime < startTime]
+        sessions = ndb.get_multi(keys)
+        return SessionForms(
+            items=[self._copySessionToForm(session) for session in sessions]
+        )
 
 
 # - - - Profile objects - - - - - - - - - - - - - - - - - - -
