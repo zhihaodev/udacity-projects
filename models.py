@@ -114,7 +114,7 @@ class Session(ndb.Model):
 
     name = ndb.StringProperty(required=True)
     hightlights = ndb.StringProperty()
-    speaker = ndb.StringProperty()
+    speaker = ndb.StringProperty(required=True)
     duration = ndb.IntegerProperty()
     typeOfSession = ndb.StringProperty()
     date = ndb.DateProperty()
@@ -142,8 +142,14 @@ class SessionQueryByTypeForm(messages.Message):
     """SessionQueryByForm -- Session query by type inbound form message"""
 
     typeOfSession = messages.StringField(1)
+    websafeConferenceKey = messages.StringField(2)
 
 class SessionQueryBySpeakerForm(messages.Message):
     """SessionQueryByForm -- Session query by speaker inbound form message"""
 
     speaker = messages.StringField(1)
+
+class FeaturedSpeakerForm(messages.Message):
+    """FeaturedSpeakerForm -- featured speaker inbound form message"""
+
+    featuredSpeaker = messages.StringField(1)

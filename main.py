@@ -15,6 +15,7 @@ __author__ = 'wesc+api@google.com (Wesley Chun)'
 import webapp2
 from google.appengine.api import app_identity
 from google.appengine.api import mail
+from google.appengine.api import memcache
 from conference import ConferenceApi
 
 class SetAnnouncementHandler(webapp2.RequestHandler):
@@ -37,8 +38,25 @@ class SendConfirmationEmailHandler(webapp2.RequestHandler):
                 'conferenceInfo')
         )
 
+class SetFeatureSpeakerHandler(webapp2.RequestHandler):
+    def post(self):
+        """Set Featured speaker for a conference."""
+        # mail.send_mail(
+        #     'noreply@%s.appspotmail.com' % (
+        #         app_identity.get_application_id()),     # from
+        #     self.request.get('email'),                  # to
+        #     'You created a new Conference!',            # subj
+        #     'Hi, you have created a following '         # body
+        #     'conference:\r\n\r\n%s' % self.request.get(
+        #         'conferenceInfo')
+        # )
+
+        memcache.set(self.request.get('conferenceKey'), self.request.get('featuredSpeaker'))
+        print "$$$$: ", self.request.get('conferenceKey'), self.request.get('featuredSpeaker')
+
 
 app = webapp2.WSGIApplication([
     ('/crons/set_announcement', SetAnnouncementHandler),
     ('/tasks/send_confirmation_email', SendConfirmationEmailHandler),
+    ('/tasks/set_featured_speaker', SetFeatureSpeakerHandler),
 ], debug=True)

@@ -41,6 +41,7 @@ from models import SessionForm
 from models import SessionForms
 from models import SessionQueryByTypeForm
 from models import SessionQueryBySpeakerForm
+from models import FeaturedSpeakerForm
 
 from settings import WEB_CLIENT_ID
 from settings import ANDROID_CLIENT_ID
@@ -298,7 +299,22 @@ class ConferenceApi(remote.Service):
     def createSession(self, request):
         """Create new session."""
 
-        return self._createSessionObject(request)
+        # return self._createSessionObject(request)
+
+        session = self._createSessionObject(request)
+        conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
+        if not conf or conf.__class__.__name__ != "Conference":
+            raise endpoints.NotFoundException(
+                'No conference found with key: %s' % request.websafeConferenceKey)
+
+        sessions = Session.query(Session.speaker==session.speaker, ancestor=conf.key)
+        if sessions.count(2) > 1:
+            # memcache.set(conf.name, session.speaker)
+
+            taskqueue.add(params={'conferenceKey': conf.key.urlsafe(),
+                                  'featuredSpeaker': session.speaker},
+                          url='/tasks/set_featured_speaker')
+        return session
 
 
     @endpoints.method(CONF_POST_REQUEST, ConferenceForm,
@@ -349,7 +365,7 @@ class ConferenceApi(remote.Service):
     def getConferenceSessions(self, request):
         """Return Sessions of a given conference."""
         conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
-        if not conf or conf.__class__.__name__ != "conference":
+        if not conf or conf.__class__.__name__ != "Conference":
             raise endpoints.NotFoundException(
                 'No conference found with key: %s' % request.websafeConferenceKey)
 
@@ -448,7 +464,7 @@ class ConferenceApi(remote.Service):
             items=[self._copySessionToForm(session) for session in q]
         )
 
-    @endpoints.method(SessionForm, SessionForms,
+    @endpoints.method(SessionQueryBySpeakerForm, SessionForms,
             path='sessionsBySpeaker',
             http_method='GET',
             name='getSessionsBySpeaker')
@@ -504,6 +520,16 @@ class ConferenceApi(remote.Service):
         return SessionForms(
             items=[self._copySessionToForm(session) for session in sessions]
         )
+
+
+    @endpoints.method(CONF_GET_REQUEST, FeaturedSpeakerForm,
+            path='/conference/{websafeConferenceKey}/featured_speaker',
+            http_method='GET',
+            name='getFeaturedSpeaker')
+    def getFeaturedSpeaker(self, request):
+        """Get the featured speaker of a conference."""
+
+        return FeaturedSpeakerForm(featuredSpeaker=memcache.get(request.websafeConferenceKey) or "")
 
 
 # - - - Profile objects - - - - - - - - - - - - - - - - - - -
