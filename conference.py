@@ -39,7 +39,6 @@ from models import TeeShirtSize
 from models import Session
 from models import SessionForm
 from models import SessionForms
-# from models import SessionQueryByTypeForm
 from models import SessionQueryBySpeakerForm
 from models import FeaturedSpeakerForm
 from models import SessionQueryByDateForm
@@ -243,7 +242,6 @@ class ConferenceApi(remote.Service):
 
         sess = s_key.get()
         sess.websafeConferenceKey = None
-        sess.websafeKey = None
         return self._copySessionToForm(sess)
 
 
@@ -511,16 +509,20 @@ class ConferenceApi(remote.Service):
     def getFeaturedSpeaker(self, request):
         """Get the featured speaker of a conference."""
 
-        speaker = memcache.get(request.websafeConferenceKey)
+        # speaker = memcache.get(request.websafeConferenceKey)
+        # if not speaker:
+        #     return FeaturedSpeakerForm()
+
+        # conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
+        # if not conf or conf.__class__.__name__ != "Conference":
+        #     raise endpoints.NotFoundException(
+        #         'No conference found with key: %s' % request.websafeConferenceKey)
+        # sessions = Session.query(Session.speaker==speaker, ancestor=conf.key)
+
+        [speaker, names] = memcache.get(request.websafeConferenceKey)
         if not speaker:
             return FeaturedSpeakerForm()
-
-        conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
-        if not conf or conf.__class__.__name__ != "Conference":
-            raise endpoints.NotFoundException(
-                'No conference found with key: %s' % request.websafeConferenceKey)
-        sessions = Session.query(Session.speaker==speaker, ancestor=conf.key)
-        return FeaturedSpeakerForm(featuredSpeaker=speaker)
+        return FeaturedSpeakerForm(featuredSpeaker=speaker, sessionNames=repr(names))
 
     @staticmethod
     def _setFeaturedSpeaker(websafeConferenceKey, speaker):
@@ -533,7 +535,7 @@ class ConferenceApi(remote.Service):
 
         sessions = Session.query(Session.speaker==speaker, ancestor=conf.key)
         if sessions.count(2) > 1:
-            memcache.set(websafeConferenceKey, speaker)
+            memcache.set(websafeConferenceKey, [speaker, [session.name for session in sessions]])
 
 
 # - - - Profile objects - - - - - - - - - - - - - - - - - - -

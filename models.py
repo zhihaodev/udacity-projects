@@ -137,13 +137,6 @@ class SessionForms(messages.Message):
 
     items = messages.MessageField(SessionForm, 1, repeated=True)
 
-
-# class SessionQueryByTypeForm(messages.Message):
-#     """SessionQueryByForm -- Session query by type inbound form message"""
-
-#     typeOfSession = messages.StringField(1)
-
-
 class SessionQueryBySpeakerForm(messages.Message):
     """SessionQueryByForm -- Session query by speaker inbound form message"""
 
@@ -153,6 +146,7 @@ class FeaturedSpeakerForm(messages.Message):
     """FeaturedSpeakerForm -- featured speaker inbound form message"""
 
     featuredSpeaker = messages.StringField(1)
+    sessionNames = messages.StringField(2)
 
 class SessionQueryByNameForm(messages.Message):
     """SessionQueryByNameFor -- Session query by name inbound form message"""
