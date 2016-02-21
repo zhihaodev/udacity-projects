@@ -25,6 +25,7 @@ App Engine application for the Udacity training course.
 
 ## Implementations
 - Task 1:
+
 	+ `Session`:
 	
  			class Session(ndb.Model):
@@ -55,9 +56,11 @@ App Engine application for the Udacity training course.
 	+ `Conference` is implemented as ancestor of `Session` for fast query for all sessions in a given conference(`getConferenceSessions`). `SessionForm` tells what type the endpoints related to `Session` takes in the requests.
 
 - Task 2:
+
 	+ The wishlist is implemented as `sessionKeysWishlist = ndb.StringProperty(repeated=True)` in `Profile` class. `sessionKeysWishlist` consists of all session keys in a user's wishlist.
 
 - Task 3:
+
 	+ Two additional queries:
 		1. Query for sessions by name: `getSessionsByName`
 		2. Query for sessions by date: `getSessionsByDate`
@@ -71,7 +74,8 @@ App Engine application for the Udacity training course.
     	Query by typeOfSession first, then use a projection query to get around this. Please refer to the  endpoint `getSessionsYouLike`.([Reference](http://stackoverflow.com/questions/22176586/optimizing-a-inequality-query-in-ndb-over-two-properties))
    
 - Task 4:
-	
+
+	When a new session is added to conference and there is more than one session by its speaker at this conference, a new Memcache entry `<websafeConferenceKey, [speaker, sessionNames]>` will be generated. Then the `getFeaturedSpeaker` endpoint retrieves this entry by calling `memcache.get()`.
 
 
 
