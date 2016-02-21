@@ -509,7 +509,7 @@ class ConferenceApi(remote.Service):
     def getFeaturedSpeaker(self, request):
         """Get the featured speaker of a conference."""
 
-        [speaker, names] = memcache.get(request.websafeConferenceKey)
+        [speaker, names] = memcache.get(request.websafeConferenceKey) or [None, None]
         if not speaker:
             return FeaturedSpeakerForm()
         return FeaturedSpeakerForm(featuredSpeaker=speaker, sessionNames=repr(names))
